@@ -5,10 +5,7 @@ from abstract_car import AbstractCar
 class OtherCar(AbstractCar):
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
-        self.image_car = pygame.image.load("data/other_car.png").convert()
-        self.highway.car_list.append(self)
-        self.highway.add_car(self.id, self.lane, self.lane_pos, self. speed)
-
+        self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
     # returns whether game is DONE
     # other cars don't collide with one another with some probability
     def move(self):
@@ -24,9 +21,8 @@ class OtherCar(AbstractCar):
 class AgentCar(AbstractCar):
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
-        self.image_car = pygame.image.load("data/agent_car.png").convert()
+        self.image_car = pygame.image.load(AbstractCar.data + "/agent_car.png").convert()
         self.trajectory = []
-        self.highway.add_car(self.id, self.lane, self.lane_pos, self.speed)
     
     def set_start_state(self):
         self.trajectory.append(self.get_feature())
@@ -50,10 +46,15 @@ class AgentCar(AbstractCar):
         return game_ended
 
     def change_lane(self, dir):
-        new_lane, new_lane_pos = self.lane + dir, self.lane_pos + self.speed       
+
+        new_lane, new_lane_pos = self.lane + dir, self.lane_pos + self.speed 
+
+        if not self.is_legal_pos(new_lane, new_lane_pos):
+            return
+
         collision = self.is_collision(new_lane, new_lane_pos)
-        
         super().change_lane(dir)
+        
         self.trajectory.append(L if dir == -1 else R)
         self.trajectory.append(self.get_feature())
         if collision:

@@ -14,13 +14,15 @@ class AbstractCar(object):
     counter = 0
     
     """ Car image size width = 228, height = 128 """
-    WIDTH = 228
-    HEIGHT = 128
+    WIDTH = 114 #228
+    HEIGHT = 64 #128
     
     highway = []
 
     min_speed = 1
     max_speed = 4
+
+    data = "smaller_data"
 
 
     def is_collision(self, new_lane, new_lane_pos):
@@ -79,6 +81,10 @@ class AbstractCar(object):
         # for each lane
         self.num_features = self.highway.num_lanes * 4 + 1
 
+        self.highway.car_list.append(self)
+        self.highway.add_car(self.id, self.lane, self.lane_pos, self. speed)
+
+
     def __eq__(self, other):
         return self.id == other.id
 
@@ -91,7 +97,7 @@ class AbstractCar(object):
 
     def pixel_pos(self):
         self.x = self.lane_pos * self.highway.lane_unit_length
-        self.y = 10 + self.lane * self.highway.lane_height
+        self.y = 5 + self.lane * (self.highway.lane_height + 1)
         return (self.x,self.y)
 
     def draw(self, screen):

@@ -9,7 +9,8 @@ class Highway(object):
     
     lane_sep_color = WHITE
     lane_color = GRAY
-    lane_height = 150 # little more than Car.height
+    # lane_height = 150 # little more than Car.height
+    lane_height = 75
     lane_unit_length = 1 # little more than Car.width
 
     car_list = []
@@ -77,17 +78,19 @@ class Highway(object):
 
             # no car ahead
             if ahead_state_elem == -1:
-                num_steps_ahead, ahead_car_speed = -1 
+                num_steps_ahead = -1
+                ahead_car_speed = -1
             
             else: 
                 ahead_car_speed = ahead_state_elem[1]
 
             # no car behind
             if behind_state_elem == -1:
-                num_steps_ahead, behind_car_speed = -1 
+                num_steps_behind = -1
+                behind_car_speed = -1
             
             else: 
-                behind_car_speed = ahead_state_elem[1]
+                behind_car_speed = behind_state_elem[1]
             
 
             closest_cars.append(num_steps_ahead)

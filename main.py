@@ -13,14 +13,14 @@ from redraw_all import redraw_all
 from game_events import check_event
 
 # general tweakable parameters
-num_lanes = 3
+num_lanes = randint(2,5)
 highway_len = 1100
-num_other_cars = 4
+num_other_cars = randint(5,10)
 
 highway = Highway(num_lanes=num_lanes, highway_len=highway_len, num_speeds = 4)
 
 # setup up agent car
-agent_car = AgentCar(highway, lane=0, lane_pos=0, speed = 1)
+agent_car = AgentCar(highway)
 
 # set up other car(s)
 for _ in range(num_other_cars):
@@ -30,7 +30,10 @@ agent_car.set_start_state()
 
 # Main Loop
 DONE = False
+PAUSE = False
 while not DONE:
     for event in pygame.event.get():
-            DONE = check_event(event, highway.car_list, agent_car, DONE);
-    redraw_all(screen, highway, agent_car)
+        DONE, PAUSE = \
+            check_event(event, highway.car_list, agent_car, DONE, PAUSE);
+    redraw_all(screen, highway)
+print("Simulation Over")
