@@ -89,8 +89,8 @@ class AbstractCar(object):
         return self.id == other.id
 
     def is_legal_pos(self, lane, lane_pos):
-        return in_range(lane_pos, 0, self.highway.highway_len) and \
-                in_range(lane, 0, self.highway.num_lanes )
+        return in_range(lane_pos, 0, self.highway.highway_len - 1) and \
+                in_range(lane, 0, self.highway.num_lanes - 1)
 
     def is_legal_speed(self, new_speed):
         return in_range(new_speed, self.min_speed, self.max_speed)
@@ -110,7 +110,10 @@ class AbstractCar(object):
         reached_end = new_lane_pos >= self.highway.highway_len
 
         if reached_end:
-            self.highway.car_list.remove(self)
+            try:
+                self.highway.car_list.remove(self)
+            except:
+                print("why is the car not in the car list?")
             self.highway.remove_car(self.lane, self.lane_pos)
             print("removed car")
             return
@@ -126,30 +129,26 @@ class AbstractCar(object):
 
 
     def change_lane(self, dir):
-        old_lane, old_lane_pos = self.lane, self.lane_pos
-        new_lane, new_lane_pos = self.lane + dir, self.lane_pos + self.speed
+        old_lane, new_lane = self.lane, self.lane + dir
         
-        if not self.is_legal_pos(new_lane, new_lane_pos):
+        if not self.is_legal_pos(new_lane, self.lane_pos):
             return
     
         self.lane = self.lane + dir
-        self.lane_pos = self.lane_pos + self.speed
 
         self.pixel_pos()
 
-        self.highway.update_car(self.id, old_lane, old_lane_pos, \
+        self.highway.update_car(self.id, old_lane, self.lane_pos, \
             self.lane, self.lane_pos, self.speed)
         
     def change_speed(self, speed_change):
-        old_lane, old_lane_pos = self.lane, self.lane_pos
         new_speed = self.speed + speed_change
         
         if not self.is_legal_speed(new_speed):
             return
 
         self.speed = new_speed
-        self.highway.update_car(self.id, old_lane, old_lane_pos, \
-            self.lane, self.lane_pos, self.speed)
+        
 
     # feature = list of [#steps ahead, ahead_car speed,
     # #steps behind, behind_car speed] for each lane

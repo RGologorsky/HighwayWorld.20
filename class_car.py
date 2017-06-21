@@ -47,21 +47,11 @@ class AgentCar(AbstractCar):
 
     def change_lane(self, dir):
 
-        new_lane, new_lane_pos = self.lane + dir, self.lane_pos + self.speed 
-
-        if not self.is_legal_pos(new_lane, new_lane_pos):
-            return
-
-        collision = self.is_collision(new_lane, new_lane_pos)
         super().change_lane(dir)
         
         self.trajectory.append(L if dir == -1 else R)
         self.trajectory.append(self.get_feature())
-        if collision:
-            print("Trajectory: ", self.trajectory)
-        return collision
-        # self.highway.
-        # self.trajectory.append()
+        
         
     def change_speed(self, speed_change):
         super().change_speed(speed_change)
