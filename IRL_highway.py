@@ -328,35 +328,11 @@ class Highway(IRLworld):
 
         trajectories = []
         for _ in range(n_traj):
-            if random_start:
-                sx, sy = rn.randint(self.grid_size), rn.randint(self.grid_size)
-            else:
-                sx, sy = 0, 0
+           # same highway
+           # diff start state
 
-            trajectory = []
-            for _ in range(traj_length):
-                if rn.random() < self.wind:
-                    action = self.actions[rn.randint(0, self.n_actions)]
-                else:
-                    action = self.actions[policy(self, state_to_index((sx,sy)))]
+           # 1. clear highway
+           # 2. add agent car, other cars
+           # call car.move() for other cars
+           # on agent car choose acion according to policy
 
-                if ( 0<= sx + action[0] < self.grid_size and
-                     0 <= sy + action[1] < self.grid_size):
-                    next_sx = sx + action[0]
-                    next_sy = sy + action[1]
-                else:
-                    next_sx = sx
-                    next_sy = sy
-
-                state_int = self.state_to_index((sx,sy))
-                action_int = self.actions.index(action)
-                next_state_int = self.state_to_index((next_sx, next_sy))
-                reward = self.reward(next_state_int)
-                trajectory.append((state_int, action_int, reward))
-
-                sx = next_sx
-                sy = next_sy
-                
-            trajectories.append(trajectory)
-
-        return np.array(trajectories)            

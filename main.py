@@ -13,14 +13,14 @@ from redraw_all import redraw_all
 from game_events import check_event
 
 # general tweakable parameters
-num_lanes = randint(2,5)
+num_lanes = 3
 highway_len = 1100
-num_other_cars = randint(5,10)
+num_other_cars = 10
 
-highway = Highway(num_lanes=num_lanes, highway_len=highway_len, num_speeds = 4)
+highway = Highway(num_lanes=num_lanes, highway_len=highway_len)
 
 # setup up agent car
-agent_car = AgentCar(highway)
+agent_car = AgentCar(highway, lane_pos = 0)
 
 # set up other car(s)
 for _ in range(num_other_cars):

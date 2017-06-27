@@ -28,7 +28,7 @@ class Highway(IRLworld):
         self.num_lanes = num_lanes
         self.highway_len = highway_len
         self.lane_width = highway_len * self.lane_unit_length
-
+        self.num_speeds = num_speeds
         self.num_states = num_lanes*highway_len
         self.state = [-1] * self.num_states
 

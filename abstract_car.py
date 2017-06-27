@@ -3,6 +3,7 @@ import itertools
 import pygame
 from constants import *
 from random import randint
+import numpy as np
 
 def in_range(x, a, b):
     return a <= x and x <= b
@@ -54,6 +55,37 @@ class AbstractCar(object):
     def rand_speed(self):
         return randint(self.min_speed, self.max_speed)
 
+    # speed is chosen from a normal distribution - Normal params depend on lane
+    # left lane (lane = 0) fastest, right lane slower 
+    def normal_speed(self):
+
+        # left-most lane moves fast
+        if self.lane == 0: 
+            mu, sigma = 3, 0.3
+
+        # right-most lane moves slow
+        elif self.lane == self.highway.num_lanes - 1:
+            mu, sigma = 1, 0.3
+
+        # middle lanes move temperate speed
+        else:
+            mu, sigma = 2, 0.3
+
+        self.speed = np.random.normal(mu, sigma, 1)[0]
+
+    def set_speed(self, speed, normal=True):
+        if speed != -1:
+            self.speed = speed
+            return
+        
+        if normal:
+            self.normal_speed()
+        else:
+            self.rand_speed()
+
+        return
+
+
     def place(self, lane, lane_pos):
         lane = lane if lane != -1 else self.rand_lane()
         lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
@@ -73,8 +105,11 @@ class AbstractCar(object):
         AbstractCar.counter += 1
 
 
-        self.speed = speed if speed != -1 else self.rand_speed()
         self.place(lane, lane_pos)
+
+        # if random, Normal speed distribution depends on lane.
+        self.set_speed(speed, normal=True)
+
         self.pixel_pos()
 
         # features = #steps to car ahead/behind, it's speed and my car speed
@@ -155,18 +190,27 @@ class AbstractCar(object):
     # with the agent's car current speed at end
     def get_feature(self):
         closest_cars = self.highway.get_closest_cars(self.lane, self.lane_pos)
+        closest_cars.append(self.id)
         closest_cars.append(self.speed)
+        closest_cars.append(self.lane)
+        closest_cars.append(self.lane_pos)
         return closest_cars
 
 
-    def print(self):
-        feat = self.get_feature()
+    def print_feature(self, feat):
 
-        print("Feautures of car id = %d: " % (self.id))
-        print("My speed is: %d. Lane Pos: %d" % (self.speed, self.lane_pos))
+        feat_len = len(feat)
+        my_id = feat[feat_len - 4]
+        my_speed = feat[feat_len - 3]
+        my_lane = feat[feat_len - 2]
+        my_lane_pos = feat[feat_len - 1]
+
+        print("Features of car id = %d: " % my_id)
+        print("My speed is: %d. Lane: %d, Lane Pos: %d" % \
+            (my_speed, my_lane, my_lane_pos))
 
         for lane in range(self.highway.num_lanes):
-            idx = lane * 4
+            idx = lane * self.highway.num_speeds
             print("Lane %d: %d steps ahead, speed %d. %d steps behind, speed = %d" % \
                 (lane, feat[idx], feat[idx+1], feat[idx+2], feat[idx+3]))
 
