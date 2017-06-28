@@ -19,7 +19,7 @@ class AbstractCar(object):
     highway = []
 
     min_speed = 0.1
-    max_speed = 4
+    max_speed = 15
 
     data = "smaller_data"
 
@@ -52,9 +52,9 @@ class AbstractCar(object):
     def normal_speed(self):
 
         # left-most lane moves fast, right-most moves slow
-        if   self.lane == 0:                          mu, sigma = 3, 0.2
-        elif self.lane == self.highway.num_lanes - 1: mu, sigma = 1, 0.2
-        else:                                         mu, sigma = 2, 0.2
+        if   self.lane == 0:                          mu, sigma = 10, 0.2
+        elif self.lane == self.highway.num_lanes - 1: mu, sigma = 6, 0.2
+        else:                                         mu, sigma = 3, 0.2
 
         self.speed = np.random.normal(mu, sigma, 1)[0]
         # ensure positive speed (or within speed limit)

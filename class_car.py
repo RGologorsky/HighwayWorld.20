@@ -11,8 +11,16 @@ class OtherCar(AbstractCar):
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
         self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
+        
         self.keep_distance = self.WIDTH/2
+        self.preferred_lane = self.lane # prefer original starting lane
+        self.preferred_speed = self.speed # prefer original speed
+        self.passing_threshold = 2 # how much slowdown will tolerate
+        self.am_passing = False
 
+    # def pass_ahead_car(self, lane, lane_pos):
+        # if (scar_ahead_speed )
+    # checks if we are keeping our distance; adjusts speed if needed
     def check_distance(self, lane, lane_pos):
         my_idx = self.highway.pos_to_idx(lane, lane_pos)
 
@@ -31,12 +39,11 @@ class OtherCar(AbstractCar):
 
         if not no_car_ahead:
             car_ahead_speed = self.highway.idx_to_state(curr_idx - 1)[1]
-            self.speed = car_ahead_speed
+            self.speed = min(self.speed, car_ahead_speed) # don't speed up
             print("Changed speed to ahead car speed = %2.2f" % car_ahead_speed)
 
 
-    # returns whether game is DONE
-    # other cars don't collide with one another
+    # returns DONE = False since other cars don't collide with one another
     def move(self):
         # if necessary, set speed to ahead car speed to maintain distance 
         self.check_distance(self.lane, self.lane_pos)
