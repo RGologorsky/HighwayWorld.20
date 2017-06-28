@@ -12,7 +12,7 @@ class OtherCar(AbstractCar):
         super().__init__(highway, lane, lane_pos, speed)
         self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
         self.original_image = self.image_car
-        
+
         self.keep_distance = self.WIDTH/2
         self.preferred_lane = self.lane # prefer original starting lane
         self.preferred_speed = self.speed # prefer original speed
@@ -74,6 +74,11 @@ class AgentCar(AbstractCar):
 
     # returns whether game is DONE
     def move(self):
+        
+        if self.acceleration: self.speed += self.acceleration * 3
+        if self.brake:        self.speed -= self.brake * 3
+        if self.angle:        self.rotate(self.angle)
+
         new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))
         collision = self.is_collision(new_lane, new_lane_pos)
         
@@ -109,7 +114,7 @@ class AgentCar(AbstractCar):
         
         
     def change_speed(self, speed_change_dir):
-        super().change_speed(speed_change_dir * self.speed_step_size)
+        super().change_speed(speed_change_dir * speed_change_amount)
 
         self.trajectory.append(S if dir == -1 else F)
         self.trajectory.append(self.get_feature())
@@ -133,3 +138,7 @@ class AgentCar(AbstractCar):
             self.print_feature(trajectory[i])
 
             print("Action %d: %s" % ((i/2), action_to_string[trajectory[i + 1]]))
+
+    def update_angle(self, angle):      self.angle = angle
+    def update_acceleration(self, val): self.acceleration = val
+    def update_brake(self, val):        self.brake = val

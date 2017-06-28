@@ -25,3 +25,7 @@ I round lane position to nearest integer.
 
 # Pygame wheel turns 540 degrees (360 + 180)
 # only using brake, acceleration, and steering wheel, not clutch or buttons
+
+# linear acceleration
+
+# add features to reflect angle, brake, acceleration, trajectory to include these numbers

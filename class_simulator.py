@@ -16,9 +16,9 @@ from constants import *
 
 class Simulator:
 
-  # axis val are between -1 to 1, convert to percentage value (from 0 to 100%)
+  # axis val are between -1 to 1, convert to percentage between 0 and 1
   def val_to_percent(val): 
-    return (1 - val) * 50
+    return (1 - val) * 0.5
 
   # convert -1 to 1 to angle -540 to 540 degrees. (540 = 360 + 180) 
   def val_to_angle(val):   
@@ -30,10 +30,6 @@ class Simulator:
     # set up '
     self.simulator = None
     self.agent_car = agent_car
-
-    self.agent_car.acceleration = None
-    self.agent_car.brake        = None
-    self.agent_car.angle        = None
     
     # set up Simulator
     for j in range(0,pygame.joystick.get_count()):
@@ -65,9 +61,12 @@ class Simulator:
     if axis == STEERING_WHEEL_AXIS:
       new_val = Simulator.val_to_angle(val) 
 
-    if   axis == STEERING_WHEEL_AXIS:    self.agent_car.angle        = new_val
-    elif axis == ACCELERATOR_PEDAL_AXIS: self.agent_car.acceleration = new_val
-    elif axis == BRAKE_PEDAL_AXIS:       self.agent_car.brake        = new_val
+    if axis == STEERING_WHEEL_AXIS:    
+      self.agent_car.update_angle(new_val)
+    elif axis == ACCELERATOR_PEDAL_AXIS: 
+      self.agent_car.update_acceleration(new_val)
+    elif axis == BRAKE_PEDAL_AXIS:       
+      self.agent_car.update_brake(new_val)
     else:
       print("Axis %d not configured", axis)
 
