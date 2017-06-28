@@ -1,4 +1,6 @@
+import pygame
 """ Define constants """
+
 
 # Set the width and height of the screen
 screen_width = 1300
@@ -20,3 +22,7 @@ FASTER = 1; SLOWER = -1
 Z = 0
 L = 1; R = 2
 S = -1; F = -2
+
+# useful functions
+def in_range(x, a, b):
+    return a <= x and x <= b

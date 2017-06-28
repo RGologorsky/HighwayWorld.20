@@ -34,6 +34,6 @@ PAUSE = False
 while not DONE:
     for event in pygame.event.get():
         DONE, PAUSE = \
-            check_event(event, highway.car_list, agent_car, DONE, PAUSE);
+            check_event(event, highway, agent_car, DONE, PAUSE);
     redraw_all(screen, highway)
 print("Simulation Over")

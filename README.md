@@ -10,4 +10,15 @@
 
 # Notes:
 
-# normal speeds => continuous => large state space
+Normal speeds => continuous => large state space, continuous position 
+I round lane position to nearest integer.
+
+# highway speed limit? Cut off normal distr since speed > 0.5 (so round > 0)
+# other car's keep a distance of self.WIDTH/2 away from each other
+
+# Highway
+
+# highway state: for each highway position = (lane, lane_pos), record: car id # and speed.
+
+
+# agent car creaed first => id = 0 -> used to print agent car state

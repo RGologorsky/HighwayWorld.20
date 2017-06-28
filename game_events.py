@@ -12,7 +12,7 @@ def move_cars(car_list, agent_car):
     DONE = agent_car.move()
     return DONE
 
-def check_event(event, car_list, agent_car, DONE, PAUSE):
+def check_event(event, highway, agent_car, DONE, PAUSE):
 
     # If user clicked close or quits
     if (event.type == pygame.QUIT) or \
@@ -22,11 +22,13 @@ def check_event(event, car_list, agent_car, DONE, PAUSE):
     # toggle pause
     if (event.type == pygame.KEYDOWN and event.key == pygame.K_p):
         PAUSE = not PAUSE
+        print(highway) 
 
-    if PAUSE: return (DONE, PAUSE)
+    if PAUSE:
+        return (DONE, PAUSE)
 
     if (event.type == CAR_MOVE_EVENT): 
-        DONE = move_cars(car_list, agent_car)
+        DONE = move_cars(highway.car_list, agent_car)
 
     # User pressed down on a key
     if event.type == pygame.KEYDOWN:

@@ -2,7 +2,8 @@ import pygame
 from constants import *
 import numpy as np
 from irlworld import *
-
+from drawing_helpers import *
+import traceback
 """
 Implements the Highway World 2.0 environment
 
@@ -17,146 +18,136 @@ class Highway(IRLworld):
     lane_sep_color = WHITE
     lane_color = GRAY
     
-    lane_height = 75 # lane_height = 150 # little more than Car.height
-    lane_unit_length = 1
+    lane_height = 75 # little more than Car.height
 
     car_list = []
     
-    def __init__(self,num_lanes=3, highway_len = 1100, num_speeds = 4, \
+    def __init__(self,num_lanes=3, highway_len = 1100, 
                     max_num_cars=10, discount = 0.8):
 
         self.num_lanes = num_lanes
         self.highway_len = highway_len
-        self.lane_width = highway_len * self.lane_unit_length
-        self.num_speeds = num_speeds
-        self.num_states = num_lanes*highway_len
-        self.state = [-1] * self.num_states
 
-        ############################
-        # HIGHWAY WORLD ATTRIBUTES
-        #############################
-        # actions = left, right, slower, faster, zero change
-        # state = lane, lane_pos, speed
+        # for each position (lane, lane_pos), state = (car id, car speed)
+        self.num_states = num_lanes * highway_len
+        self.state = [(-1, -1)] * self.num_states
 
-        # self.num_speeds = num_speeds
-        # self.actions = (Z, L, R, S, F)
-        # self.n_actions = len(self.actions)
-        # self.n_states = \
-        #     num_lanes * highway_len * num_speeds # * (max_num_cars + 1)
-        # self.discount = discount
 
-        # Construct the transition probability array
-        # self.transition_probability = np.array(
-        #     [[[self._transition_probability(i,j,k)
-        #        for k in range(self.n_states)]
-        #       for j in range(self.n_actions)]
-        #      for i in range(self.n_states)])
-
-    def get_state_index(self, curr_lane, curr_lane_pos):
+    def pos_to_idx(self, curr_lane, curr_lane_pos):
         return curr_lane * self.highway_len + curr_lane_pos
 
-    def deciper_index(self, index):
+    def idx_to_pos(self, index):
         return (index/self.highway_len, index % self.highway_len)
 
-    def get_state_elem(self, lane, lane_pos):
-        idx = self.get_state_index(lane, lane_pos)
+    def idx_to_state(self, idx):
         if idx < 0 or idx >= self.num_states:
-            print("state elem, looking @ index %d" % idx)
-            print("lane %d, lane_pos %d" % (lane, lane_pos))
+            print("Idx to State. Out of bounds index: %d" % idx)
+            traceback.print_stack()
         return self.state[idx]
+
+    def pos_to_state(self, lane, lane_pos):
+        idx = self.pos_to_idx(lane, lane_pos)
+        return self.idx_to_state(idx)
+
+    def set_state_from_idx(self, idx, id, speed):
+        self.state[idx] = (id, speed)
+
+    def set_state_from_pos(self, lane, lane_pos, id, speed):
+        idx = self.pos_to_idx(lane, lane_pos)
+        self.set_state_from_idx(idx, id, speed)
 
     def __str__(self):
         res = "Highway State. \n"
-        for i in range(self.num_states):
-            elem = self.state[i]
-            if elem != -1:
-                lane, lane_pos = self.deciper_index(i)
-                res += ("Lane = %d, Pos = %d. Speed = %d, ID = %d. \n" % \
-                    (lane, lane_pos, elem[0], elem[1]))
+        for idx in range(self.num_states):
+            state = self.idx_to_state(idx)
+            if state != (-1, -1):
+                lane, lane_pos = self.idx_to_pos(idx)
+                res += ("Lane = %d. Pos = %3d. Speed = %2.1f. ID = %2d. \n" % \
+                    (lane, lane_pos, state[1], state[0]))
         return res
 
     def print_state(self):
         return print(str(self))
 
-    def get_closest_cars(self, curr_lane, curr_lane_pos):
+
+    # returns (id, #steps away, speed) of closest car in specified lane & dir
+    def get_closest_car(self, lane, lane_pos, dir):
+        # if no such lane
+        if not in_range(lane, 0, self.num_lanes - 1) or \
+           not in_range(lane_pos, 0, self.highway_len - 1): 
+            return (-1, -1, -1)
+
+        num_steps_away = 0
+        near_state = (-1, -1)
+
+        while (in_range(lane_pos+num_steps_away, 0, self.highway_len - 1) and \
+                    near_state == (-1, -1)):
+                
+                near_state = self.pos_to_state(lane, lane_pos + num_steps_away)
+                num_steps_away += dir
+            
+        # no nearby cars in specified lane and dir
+        if near_state == (-1, -1): return (-1, -1, -1)
+        return (near_state[0], abs(num_steps_away), near_state[1])
+
+
+    # returns (id, #steps away, speed) of the closest cars ahead/behind 
+    # in current lane & neighboring left/right lanes.
+    def get_closest_cars(self, lane, lane_pos):
         closest_cars = []
-        for lane in range(self.num_lanes):
-            
-            num_steps_ahead = 0 if lane != curr_lane else 1
-            num_steps_behind = 0 if lane != curr_lane else 1
 
-            ahead_state_elem = \
-                self.get_state_elem(lane, curr_lane_pos + num_steps_ahead)
-            behind_state_elem = \
-                self.get_state_elem(lane, curr_lane_pos - num_steps_behind)
-            
-            while (curr_lane_pos + num_steps_ahead < self.highway_len - 1 and \
-                    ahead_state_elem == -1):
+        closest_left_ahead =  self.get_closest_car(lane - 1, lane_pos, dir = 1)
+        closest_left_behind = self.get_closest_car(lane - 1, lane_pos, dir = -1)
 
-                num_steps_ahead += 1
-                ahead_state_elem = \
-                    self.get_state_elem(lane,curr_lane_pos+num_steps_ahead)
-            
-            while (curr_lane_pos - num_steps_behind > 0 and \
-                behind_state_elem == -1):
-    
-                num_steps_behind += 1
-                behind_state_elem = \
-                    self.get_state_elem(lane,curr_lane_pos-num_steps_behind)
+        closest_ahead =  self.get_closest_car(lane, lane_pos + 1, dir = 1)
+        closest_behind = self.get_closest_car(lane, lane_pos - 1, dir = -1)
 
-            # no car ahead
-            if ahead_state_elem == -1:
-                num_steps_ahead = -1
-                ahead_car_speed = -1
-            
-            else: 
-                ahead_car_speed = ahead_state_elem[1]
+        closest_right_ahead = self.get_closest_car(lane + 1, lane_pos, dir = 1)
+        closest_right_behind= self.get_closest_car(lane + 1, lane_pos, dir = -1)
+        
+        closest_cars.append(closest_left_ahead)
+        closest_cars.append(closest_left_behind)
 
-            # no car behind
-            if behind_state_elem == -1:
-                num_steps_behind = -1
-                behind_car_speed = -1
-            
-            else: 
-                behind_car_speed = behind_state_elem[1]
-            
-
-            closest_cars.append(num_steps_ahead)
-            closest_cars.append(ahead_car_speed)
-
-            closest_cars.append(num_steps_behind)
-            closest_cars.append(behind_car_speed)
-
-            # my_speed = self.get_state_elem
+        closest_cars.append(closest_ahead)
+        closest_cars.append(closest_behind)
+        
+        closest_cars.append(closest_right_ahead)
+        closest_cars.append(closest_right_behind)
 
         return closest_cars
 
 
     def add_car(self, car_id, car_lane, car_lane_pos, curr_speed):
-        state_index = self.get_state_index(car_lane, car_lane_pos)
-        self.state[state_index] = (car_id, curr_speed)
+        self.set_state_from_pos(car_lane, car_lane_pos, car_id, curr_speed)
 
     def remove_car(self, car_lane, car_lane_pos):
-        state_index = self.get_state_index(car_lane, car_lane_pos)
-        self.state[state_index] = -1
+        state_index = self.pos_to_idx(car_lane, car_lane_pos)
+        self.state[state_index] = (-1, -1)
 
     def update_car(self, car_id, old_lane, old_lane_pos, new_lane, new_lane_pos, curr_speed):
         self.remove_car(old_lane, old_lane_pos)
         self.add_car(car_id, new_lane, new_lane_pos, curr_speed)
 
-        # self.print_state()
+    # DRAWING FUNCTIONS
 
     def draw_lane(self, screen, x, y):
-        pygame.draw.rect(screen, self.lane_color, [x,y,self.lane_width,self.lane_height], 0)
+        pygame.draw.rect(screen, self.lane_color, [x,y,self.highway_len,self.lane_height], 0)
 
     def draw_sep(self, screen, x, y):
-        pygame.draw.line(screen, self.lane_sep_color, (x,y), (x + self.lane_width, y), 1)
+        pygame.draw.line(screen, self.lane_sep_color, (x,y), (x + self.highway_len, y), 1)
 
 
+    def draw_highway_state(self, screen, x, y):
+        render_multi_line(screen, str(self), x, y)
+
+    def draw_agent_car(self, agent_car, screen, x, y):
+        render_multi_line(screen, str(agent_car), x, y)
+        
     def draw(self, screen):
         # start at top-left
         x = 0
         curr_y = 0
+        agent_car = None
         
         # draw lanes
         for i in range(self.num_lanes):
@@ -169,4 +160,16 @@ class Highway(IRLworld):
 
         # draw cars
         for car in self.car_list:
-            car.draw(screen);         
+            car.draw(screen);    
+            
+            if (car.id == 1): 
+                agent_car = car  
+
+        # draw highway state
+        x, curr_y  = x + 10, curr_y + 10
+        self.draw_highway_state(screen, x, curr_y) 
+
+        # draw agent car features
+        if agent_car:
+            x = screen_width - 500
+            self.draw_agent_car(agent_car, screen, x, curr_y) 
