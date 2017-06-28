@@ -117,6 +117,11 @@ class AbstractCar(object):
     def draw(self, screen):
         return screen.blit(self.image_car, self.pixel_pos())
 
+    def rotate(self, angle):
+        self.image_car = pygame.transform.rotate(self.original_image, angle)
+        rect = self.image_car.get_rect()  # Replace old rect with new rect.
+        rect.center = (self.x, self.y)  # Put new rect's center at old center.
+
     def move(self):
         old_lane, old_lane_pos = self.lane, self.lane_pos
         new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))

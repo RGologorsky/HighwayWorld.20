@@ -11,6 +11,7 @@ class OtherCar(AbstractCar):
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
         self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
+        self.original_image = self.image_car
         
         self.keep_distance = self.WIDTH/2
         self.preferred_lane = self.lane # prefer original starting lane
@@ -61,6 +62,12 @@ class AgentCar(AbstractCar):
         super().__init__(highway, lane, lane_pos, speed)
         self.image_car = pygame.image.load(AbstractCar.data + "/agent_car.png").convert()
         self.trajectory = []
+
+        self.acceleration = None
+        self.brake        = None
+        self.angle        = None
+
+        self.original_image = self.image_car
     
     def set_start_state(self):
         self.trajectory.append(self.get_feature())

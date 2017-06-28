@@ -1,3 +1,39 @@
+# Number of joysticks: 1
+# Joystick 0
+# Joystick name: G920 Driving Force Racing Wheel for Xbox One
+# Number of axes: 4
+# Axis 0 value:  0.001
+# Axis 1 value:  1.000
+# Axis 2 value:  1.000
+# Axis 3 value:  1.000
+# Number of buttons: 18
+# Button  0 value: 0
+# Button  1 value: 0
+# Button  2 value: 0
+# Button  3 value: 0
+# Button  4 value: 0
+# Button  5 value: 0
+# Button  6 value: 0
+# Button  7 value: 0
+# Button  8 value: 0
+# Button  9 value: 0
+# Button 10 value: 0
+# Button 11 value: 0
+# Button 12 value: 0
+# Button 13 value: 0
+# Button 14 value: 0
+# Button 15 value: 0
+# Button 16 value: 0
+# Button 17 value: 0
+# Number of hats: 1
+# Hat 0 value: (0, 0)
+
+#Wheel.config.PEDAL_TOLERANCE
+# if state > 100 - Wheel.config.PEDAL_TOLERANCE:
+      #   state = 100
+      # if state < Wheel.config.PEDAL_TOLERANCE:
+      #   state = 0
+#  elif event.type in (pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP):
 # closest cars in each lane
 def get_closest_cars(self, curr_lane, curr_lane_pos):
         closest_cars = []

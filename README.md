@@ -22,3 +22,6 @@ I round lane position to nearest integer.
 
 
 # agent car creaed first => id = 0 -> used to print agent car state
+
+# Pygame wheel turns 540 degrees (360 + 180)
+# only using brake, acceleration, and steering wheel, not clutch or buttons

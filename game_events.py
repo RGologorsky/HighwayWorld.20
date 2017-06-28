@@ -1,6 +1,5 @@
 """ Function which control game """
 import pygame
-from constants import *
 
 CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 250
 pygame.time.set_timer(CAR_MOVE_EVENT, t)
@@ -12,7 +11,7 @@ def move_cars(car_list, agent_car):
     DONE = agent_car.move()
     return DONE
 
-def check_event(event, highway, agent_car, DONE, PAUSE):
+def check_event(event, highway, agent_car, simulator, DONE, PAUSE):
 
     # If user clicked close or quits
     if (event.type == pygame.QUIT) or \
@@ -29,6 +28,10 @@ def check_event(event, highway, agent_car, DONE, PAUSE):
 
     if (event.type == CAR_MOVE_EVENT): 
         DONE = move_cars(highway.car_list, agent_car)
+
+    if event.type == pygame.JOYAXISMOTION:
+      print("Joy axis motion")
+      simulator.set_axis(event.axis, event.value)
 
     # User pressed down on a key
     if event.type == pygame.KEYDOWN:

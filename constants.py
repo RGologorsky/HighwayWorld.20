@@ -26,3 +26,13 @@ S = -1; F = -2
 # useful functions
 def in_range(x, a, b):
     return a <= x and x <= b
+
+# simulator constants
+SIMULATOR_NAME = "G920 Driving Force Racing Wheel for Xbox One"
+STEERING_WHEEL_AXIS    = 0
+ACCELERATOR_PEDAL_AXIS = 1 
+BRAKE_PEDAL_AXIS       = 2
+CLUTCH_PEDAL_AXIS      = 3
+
+AXIS_NAMES = ["STEERING_WHEEL_AXIS", "ACCELERATOR_PEDAL_AXIS", \
+              "BRAKE_PEDAL_AXIS", "CLUTCH_PEDAL_AXIS"]
