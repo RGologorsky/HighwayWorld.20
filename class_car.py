@@ -60,7 +60,8 @@ class AgentCar(AbstractCar):
 
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
-        self.image_car = pygame.image.load(AbstractCar.data + "/agent_car.png").convert()
+        file = AbstractCar.data + "/agent_car.png"
+        self.image_car = pygame.image.load(file).convert_alpha()
         self.trajectory = []
 
         self.acceleration = None
@@ -74,10 +75,16 @@ class AgentCar(AbstractCar):
 
     # returns whether game is DONE
     def move(self):
+
+        if self.angle:        self.rotate(self.angle)
+
+        self.old_speed = self.speed
         
         if self.acceleration: self.speed += self.acceleration * 3
         if self.brake:        self.speed -= self.brake * 3
-        if self.angle:        self.rotate(self.angle)
+        
+        if not self.is_legal_speed(self.speed): 
+            self.speed = self.old_speed
 
         new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))
         collision = self.is_collision(new_lane, new_lane_pos)
@@ -114,7 +121,7 @@ class AgentCar(AbstractCar):
         
         
     def change_speed(self, speed_change_dir):
-        super().change_speed(speed_change_dir * speed_change_amount)
+        super().change_speed(speed_change_dir)
 
         self.trajectory.append(S if dir == -1 else F)
         self.trajectory.append(self.get_feature())
@@ -142,3 +149,11 @@ class AgentCar(AbstractCar):
     def update_angle(self, angle):      self.angle = angle
     def update_acceleration(self, val): self.acceleration = val
     def update_brake(self, val):        self.brake = val
+
+    def print_simulator_settings(self):
+        res = "Agent Car: Speed %2.2f: \n" % self.speed
+        res += "Angle: %2.3d degrees. \n" % self.angle
+        res += "Acceleration: %2.3f (0-1 scale). \n" % self.acceleration
+        res += "Brake: %2.3f (0-1 scale). \n" % self.brake
+
+        return res

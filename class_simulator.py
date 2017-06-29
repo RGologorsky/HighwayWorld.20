@@ -22,7 +22,7 @@ class Simulator:
 
   # convert -1 to 1 to angle -540 to 540 degrees. (540 = 360 + 180) 
   def val_to_angle(val):   
-    return (val * 540) % 360
+    return -1 * (val * 540) % 360 # change clockwise/counter orientation
 
 
   def __init__(self, agent_car):

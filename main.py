@@ -16,7 +16,7 @@ from game_events import check_event
 # general tweakable parameters
 num_lanes = 3
 highway_len = 1100
-num_other_cars = 10
+num_other_cars = 6
 
 highway = Highway(num_lanes=num_lanes, highway_len=highway_len)
 

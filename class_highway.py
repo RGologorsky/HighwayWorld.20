@@ -142,6 +142,10 @@ class Highway(IRLworld):
 
     def draw_agent_car(self, agent_car, screen, x, y):
         render_multi_line(screen, str(agent_car), x, y)
+
+    def draw_simulator_settings(self, agent_car, screen, x, y):
+        simulator_settings = agent_car.print_simulator_settings()
+        render_multi_line(screen, simulator_settings, x, y)
         
     def draw(self, screen):
         # start at top-left
@@ -165,11 +169,15 @@ class Highway(IRLworld):
             if (car.id == 1): 
                 agent_car = car  
 
-        # draw highway state
-        x, curr_y  = x + 10, curr_y + 10
-        self.draw_highway_state(screen, x, curr_y) 
-
         # draw agent car features
+        x, curr_y  = x + 10, curr_y + 10
         if agent_car:
-            x = screen_width - 500
-            self.draw_agent_car(agent_car, screen, x, curr_y) 
+            self.draw_agent_car(agent_car, screen, x, curr_y)
+
+        # draw acceleration, angle, and brake
+        x += 600
+        self.draw_simulator_settings(agent_car, screen, x, curr_y)
+
+        # draw highway state
+        x = screen_width - 400
+        self.draw_highway_state(screen, x, curr_y) 

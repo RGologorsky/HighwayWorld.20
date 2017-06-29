@@ -27,5 +27,5 @@ I round lane position to nearest integer.
 # only using brake, acceleration, and steering wheel, not clutch or buttons
 
 # linear acceleration
-
+# not continue forward
 # add features to reflect angle, brake, acceleration, trajectory to include these numbers

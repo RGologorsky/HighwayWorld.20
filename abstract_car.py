@@ -19,9 +19,9 @@ class AbstractCar(object):
     highway = []
 
     min_speed = 0.1
-    max_speed = 15
+    max_speed = 20
 
-    data = "smaller_data"
+    data = "smaller_data_transparent"
 
 
     def is_collision(self, new_lane, new_lane_pos):
@@ -116,8 +116,8 @@ class AbstractCar(object):
 
     def rotate(self, angle):
         self.image_car = pygame.transform.rotate(self.original_image, angle)
-        rect = self.image_car.get_rect()  # Replace old rect with new rect.
-        rect.center = (self.x, self.y)  # Put new rect's center at old center.
+        # rect = self.image_car.get_rect()  # Replace old rect with new rect.
+        # rect.center = (self.x, self.y)  # Put new rect's center at old center.
 
     def draw(self, screen):
         return screen.blit(self.image_car, self.pixel_pos())

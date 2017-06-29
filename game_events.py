@@ -1,5 +1,6 @@
 """ Function which control game """
 import pygame
+from constants import *
 
 CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 250
 pygame.time.set_timer(CAR_MOVE_EVENT, t)
