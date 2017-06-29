@@ -4,12 +4,16 @@ from abstract_car import AbstractCar
 import numpy as np
 from random import randint
 
+# pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
     # don't go closer than keep_dist between end of my car and start of other
 
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
+        # pygame.sprite.Sprite.__init__(self,
+        #                       self.groups) 
+
         self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
         self.original_image = self.image_car
 
