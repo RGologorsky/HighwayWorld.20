@@ -1,4 +1,5 @@
 import pygame
+from math import pi
 from constants import *
 
 # Simulator has 4 components: steering wheel (angle), and 
@@ -21,9 +22,9 @@ class Simulator:
     return (1 - val) * 0.5
 
   # convert -1 to 1 to angle -540 to 540 degrees. (540 = 360 + 180) 
-  def val_to_angle(val):   
-    return -1 * (val * 540) % 360 # change clockwise/counter orientation
-
+  def val_to_angle_degrees(val):   
+    sign = 1 if val > 0 else -1
+    return -1 * sign * ((abs(val) * 540) % 360) # flip clockwise/counter orientation
 
   def __init__(self, agent_car):
 
@@ -59,7 +60,7 @@ class Simulator:
     new_val = Simulator.val_to_percent(val)
 
     if axis == STEERING_WHEEL_AXIS:
-      new_val = Simulator.val_to_angle(val) 
+      new_val = Simulator.val_to_angle_degrees(val) 
 
     if axis == STEERING_WHEEL_AXIS:    
       self.agent_car.update_angle(new_val)
@@ -68,8 +69,5 @@ class Simulator:
     elif axis == BRAKE_PEDAL_AXIS:       
       self.agent_car.update_brake(new_val)
     else:
-      print("Axis %d not configured", axis)
-
-    print("Set ", AXIS_NAMES[axis], " to ", val)
-
+      print("Axis %d not configured" % axis)
   

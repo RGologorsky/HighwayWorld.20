@@ -5,6 +5,7 @@ from constants import *
 from random import randint
 import numpy as np
 import itertools
+from math import cos, sin, radians
 
 class AbstractCar(object):
 
@@ -13,25 +14,51 @@ class AbstractCar(object):
     counter = itertools.count(1)
     
     """ Car image size width = 228, height = 128 """
-    WIDTH = 114 #228
-    HEIGHT = 64 #128
+    WIDTH = 104 #228
+    HEIGHT = 48 #128
     
     highway = []
 
     min_speed = 0.1
     max_speed = 20
 
-    data = "smaller_data_transparent"
+    data = "smaller_data_transparent_cropped"
 
+    # general useful functions
+    def center_to_upper_left(x, y):
+        return (x - AbstractCar.WIDTH/2, y - AbstractCar.HEIGHT/2)
+
+    def rand_lane(self): 
+        return randint(0, self.highway.num_lanes - 1)
+    
+    def rand_lane_pos(self): 
+        return randint(0, self.highway.highway_len - self.WIDTH - 1)
+    
+    def rand_speed(self): 
+        return randint(self.min_speed, self.max_speed)
+
+    def is_legal_lane(self, lane):
+        return in_range(lane, 0, self.highway.num_lanes - 1)
+
+    def is_legal_speed(self, new_speed):
+        return in_range(new_speed, self.min_speed, self.max_speed)
+
+    def get_pixel_pos(self):
+        return (self.x, self.y)
+
+    def pixel_to_lane_pos(self, x, y):
+        lane     = int(y / self.highway.lane_height)
+        lane_pos = int(round(x))
+
+        return (lane, lane_pos)
 
     def is_collision(self, new_lane, new_lane_pos):
-        my_idx = self.highway.pos_to_idx(new_lane, new_lane_pos)
+        behind_pos = max(0,new_lane_pos - self.WIDTH)
+        ahead_pos =  min(new_lane_pos + self.WIDTH, self.highway.highway_len-1)
 
-        # my car would collide with cars within the behind-ahead index range
-        behind_idx = self.highway.pos_to_idx(new_lane, \
-                                            max(0, new_lane_pos - self.WIDTH))
-        ahead_idx = self.highway.pos_to_idx(new_lane,  
-                    min(self.highway.highway_len-1, new_lane_pos + self.WIDTH))
+        my_idx      = self.highway.pos_to_idx(new_lane, new_lane_pos)
+        behind_idx  = self.highway.pos_to_idx(new_lane, behind_pos)
+        ahead_idx   = self.highway.pos_to_idx(new_lane, ahead_pos)
 
         no_crash = True
         curr_idx = behind_idx
@@ -41,55 +68,87 @@ class AbstractCar(object):
             no_crash = (neighbor == (-1, -1)) or (neighbor[0] == self.id)
             curr_idx += 1
 
+            if not no_crash:
+                print("crash car idx %d" % (curr_idx - 1))
+
+        if (not no_crash):
+            print ("collision occured, car id %d" % self.id)
         return (not no_crash)
 
-    def rand_lane(self): return randint(0, self.highway.num_lanes - 1)
-    def rand_lane_pos(self): return randint(0, self.highway.highway_len - self.WIDTH - 1)
-    def rand_speed(self): return randint(self.min_speed, self.max_speed)
+    # init functions
+    def init_pixel_pos(self):
+        self.x = self.lane_pos
+        self.y = (self.lane + 0.5) * self.highway.lane_height
 
-    # speed is chosen from a normal distribution - Normal params depend on lane
-    # left lane (lane = 0) fastest, right lane slower 
     def normal_speed(self):
-
-        # left-most lane moves fast, right-most moves slow
         if   self.lane == 0:                          mu, sigma = 10, 0.2
         elif self.lane == self.highway.num_lanes - 1: mu, sigma = 6, 0.2
         else:                                         mu, sigma = 3, 0.2
 
         self.speed = np.random.normal(mu, sigma, 1)[0]
-        # ensure positive speed (or within speed limit)
+
         while (self.speed <= 0.5):
             self.speed = np.random.normal(mu, sigma, 1)[0]
         print("Set speed to %1.1f" % self.speed)
+    
+    def init_speed(self, speed, normal=True):
+        if speed != -1: 
+            self.speed = speed
+        elif normal:    
+            self.normal_speed()
+        else:           
+            self.rand_speed()
 
-    def set_speed(self, speed, normal=True):
-        if speed != -1: self.speed = speed
-        elif normal: self.normal_speed()
-        else: self.rand_speed()
-
-        return
-
-
-    def place(self, lane, lane_pos):
-        lane = lane if lane != -1 else self.rand_lane()
+    def init_place(self, lane, lane_pos):
+        lane     = lane     if     lane != -1 else self.rand_lane()
         lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
 
         while (self.is_collision(lane, lane_pos)):
-            lane = self.rand_lane()
+            lane     = self.rand_lane()
             lane_pos = self.rand_lane_pos()
 
-        self.lane = lane
+        self.lane     = lane
         self.lane_pos = lane_pos
+    
+    # update functions
+    def update_pos(self, allow_collision = False):
+        angle = radians(self.angle)
+        new_x = self.x + self.speed * cos(angle)
+        new_y = self.y - self.speed * sin(angle)
 
+        new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
+        if self.is_legal_lane(new_lane): 
+            yes_collision = self.is_collision(new_lane, new_lane_pos)
+            
+            if allow_collision or not yes_collision:
+                self.highway.update_car(self.id, self.lane, self.lane_pos, \
+                                    new_lane, new_lane_pos, self.speed)
+                self.x, self.y           = new_x, new_y
+                self.lane, self.lane_pos = new_lane, new_lane_pos
+
+                return yes_collision
+        return False
+
+    def update_speed(self):
+        new_speed = self.speed + 3*self.acceleration - 3*self.brake
+
+        if self.is_legal_speed(new_speed): 
+            self.speed = new_speed
+
+    def __eq__(self, other):
+        return self.id == other.id
+   
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
-        self.id = next(self.counter)
+        self.id           = next(self.counter)
+        self.highway      = highway
+        self.acceleration = 0
+        self.brake        = 0
+        self.angle        = 0
 
-        self.highway = highway
-        
-        self.place(lane, lane_pos)
-        self.set_speed(speed, normal=True)
-        self.pixel_pos()
+        self.init_place(lane, lane_pos)
+        self.init_speed(speed, normal=True)
+        self.init_pixel_pos()
 
         self.highway.car_list.append(self)
         self.highway.add_car(self.id, self.lane, self.lane_pos, self. speed)
@@ -99,71 +158,52 @@ class AbstractCar(object):
         # # for each lane
         # self.num_features = self.highway.num_lanes * 4 + 1
 
-    def __eq__(self, other):
-        return self.id == other.id
-
-    def is_legal_pos(self, lane, lane_pos):
-        return in_range(lane_pos, 0, self.highway.highway_len - 1) and \
-                in_range(lane, 0, self.highway.num_lanes - 1)
-
-    def is_legal_speed(self, new_speed):
-        return in_range(new_speed, self.min_speed, self.max_speed)
-
-    def pixel_pos(self):
-        self.x = self.lane_pos
-        self.y = 5 + self.lane * (self.highway.lane_height + 1)
-        return (self.x,self.y)
-
-    def rotate(self, angle):
-        self.image_car = pygame.transform.rotate(self.original_image, angle)
-        # rect = self.image_car.get_rect()  # Replace old rect with new rect.
-        # rect.center = (self.x, self.y)  # Put new rect's center at old center.
+    # rotate car image around center
+    def rotate(self):
+        self.image_car = pygame.transform.rotate(self.original_image, self.angle)
+        rect = self.image_car.get_rect()
+        rect.center = (self.x, self.y)  
+        
 
     def draw(self, screen):
-        return screen.blit(self.image_car, self.pixel_pos())
+        (center_x, center_y) = self.get_pixel_pos()
+        upper_left_pos = AbstractCar.center_to_upper_left(center_x, center_y)
+        return screen.blit(self.image_car, upper_left_pos)
 
-    def move(self):
-        old_lane, old_lane_pos = self.lane, self.lane_pos
-        new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))
-
-        reached_end = new_lane_pos >= self.highway.highway_len
+    def move(self, allow_collision = False):
+        reached_end = self.lane_pos >= self.highway.highway_len - 1
 
         if reached_end:
-            try: self.highway.car_list.remove(self)
-            except: print("why is the car not in the car list?")
+            try: 
+                self.highway.car_list.remove(self)
+            except: 
+                print("why is the car not in the car list?")
             
             self.highway.remove_car(self.lane, self.lane_pos)
             print("removed car")
             
             return
 
-        if not self.is_legal_pos(new_lane, new_lane_pos): return
-
-        self.lane, self.lane_pos = new_lane, new_lane_pos
-        self.pixel_pos() 
-
-        self.highway.update_car(self.id, old_lane, old_lane_pos, \
-            self.lane, self.lane_pos, self.speed)
-
+        self.rotate()
+        self.update_speed()
+        collision = self.update_pos(allow_collision)
+        return collision
 
     def change_lane(self, dir):
-        old_lane, new_lane = self.lane, self.lane + dir
+        new_lane = self.lane + dir
         
-        if not self.is_legal_pos(new_lane, self.lane_pos): return
-    
-        self.lane = self.lane + dir
+        if self.is_legal_lane(new_lane):
+            self.highway.update_car(self.id, self.lane, self.lane_pos, \
+                                    new_lane, self.lane_pos, self.speed)
 
-        self.pixel_pos()
-
-        self.highway.update_car(self.id, old_lane, self.lane_pos, \
-            self.lane, self.lane_pos, self.speed)
+            self.lane = new_lane
+            self.y    += dir * self.highway.lane_height
         
     def change_speed(self, speed_change):
         new_speed = self.speed + speed_change
         
-        if not self.is_legal_speed(new_speed): return
-
-        self.speed = new_speed
+        if self.is_legal_speed(new_speed): 
+            self.speed = new_speed
         
 
     # feature = list (id, #steps away, speed) for cars ahead/behind and 

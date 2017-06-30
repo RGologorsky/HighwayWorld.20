@@ -45,16 +45,12 @@ class OtherCar(AbstractCar):
         if not no_car_ahead:
             car_ahead_speed = self.highway.idx_to_state(curr_idx - 1)[1]
             self.speed = min(self.speed, car_ahead_speed) # don't speed up
-            print("Changed speed to ahead car speed = %2.2f" % car_ahead_speed)
-
 
     # returns DONE = False since other cars don't collide with one another
     def move(self):
         # if necessary, set speed to ahead car speed to maintain distance 
-        self.check_distance(self.lane, self.lane_pos)
-        new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))
-        
-        super().move()
+        self.check_distance(self.lane, self.lane_pos)        
+        super().move(allow_collision = False)
         return False
 
 class AgentCar(AbstractCar):
@@ -62,58 +58,34 @@ class AgentCar(AbstractCar):
     # speed change step size
     speed_step_size = 0.1
 
+    def init_start_state(self):
+        self.trajectory.append(self.get_feature())
+
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         super().__init__(highway, lane, lane_pos, speed)
         file = AbstractCar.data + "/agent_car.png"
         self.image_car = pygame.image.load(file).convert_alpha()
-        self.trajectory = []
-
-        self.acceleration = None
-        self.brake        = None
-        self.angle        = None
-
         self.original_image = self.image_car
-    
-    def set_start_state(self):
-        self.trajectory.append(self.get_feature())
+        self.trajectory = []
+        
 
     # returns whether game is DONE
     def move(self):
 
-        if self.angle:        self.rotate(self.angle)
-
-        self.old_speed = self.speed
-        
-        if self.acceleration: self.speed += self.acceleration * 3
-        if self.brake:        self.speed -= self.brake * 3
-        
-        if not self.is_legal_speed(self.speed): 
-            self.speed = self.old_speed
-
-        new_lane, new_lane_pos = self.lane, int(round(self.lane_pos + self.speed))
-        collision = self.is_collision(new_lane, new_lane_pos)
-        
-        super().move();
+        collision = super().move(allow_collision = True);
         
         # update trajectory
         self.trajectory.append(Z)
         curr_feature = self.get_feature()
         self.trajectory.append(curr_feature)
-        
-
-        self.print_feature(curr_feature)
-        
-        reached_end = new_lane_pos >= self.highway.highway_len
+                
+        reached_end = self.lane_pos >= self.highway.highway_len
         game_ended = collision or reached_end
-
-        print("Game over? %s " % game_ended)
 
         if game_ended:
             if collision: print("Collision Occurred")
             if reached_end: print("Successfully Reached End of Track")
             
-            self.print_trajectory(self.trajectory)
-
         return game_ended
 
     def change_lane(self, dir):
@@ -155,8 +127,8 @@ class AgentCar(AbstractCar):
     def update_brake(self, val):        self.brake = val
 
     def print_simulator_settings(self):
-        res = "Agent Car: Speed %2.2f: \n" % self.speed
-        res += "Angle: %2.3d degrees. \n" % self.angle
+        res =  "Agent Car: Speed %2.2f: \n" % self.speed
+        res += "Angle: %2.3d degrees. \n"   % self.angle        
         res += "Acceleration: %2.3f (0-1 scale). \n" % self.acceleration
         res += "Brake: %2.3f (0-1 scale). \n" % self.brake
 

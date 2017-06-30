@@ -31,7 +31,6 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE):
         DONE = move_cars(highway.car_list, agent_car)
 
     if event.type == pygame.JOYAXISMOTION:
-      print("Joy axis motion")
       simulator.set_axis(event.axis, event.value)
 
     # User pressed down on a key

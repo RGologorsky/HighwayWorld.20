@@ -29,7 +29,7 @@ simulator = Simulator(agent_car)
 # set up other car(s)
 for _ in range(num_other_cars):
     other_car = OtherCar(highway)
-agent_car.set_start_state()
+agent_car.init_start_state()
 
 # set up simulator
 simulator = Simulator(agent_car)

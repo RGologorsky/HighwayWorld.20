@@ -18,7 +18,7 @@ class Highway(IRLworld):
     lane_sep_color = WHITE
     lane_color = GRAY
     
-    lane_height = 75 # little more than Car.height
+    lane_height = 76 # little more than Car.height
 
     car_list = []
     
@@ -50,7 +50,12 @@ class Highway(IRLworld):
         return self.idx_to_state(idx)
 
     def set_state_from_idx(self, idx, id, speed):
-        self.state[idx] = (id, speed)
+        try: 
+            self.state[idx] = (id, speed)
+        except:
+            print("idx not in range: %d" % idx)
+            pos = self.idx_to_pos(idx)
+            print("pos: lane %d, lane pos %d" % pos)
 
     def set_state_from_pos(self, lane, lane_pos, id, speed):
         idx = self.pos_to_idx(lane, lane_pos)
@@ -118,11 +123,20 @@ class Highway(IRLworld):
 
 
     def add_car(self, car_id, car_lane, car_lane_pos, curr_speed):
+        car_lane_pos = min(self.highway_len - 1, car_lane_pos)
+        
         self.set_state_from_pos(car_lane, car_lane_pos, car_id, curr_speed)
 
     def remove_car(self, car_lane, car_lane_pos):
-        state_index = self.pos_to_idx(car_lane, car_lane_pos)
-        self.state[state_index] = (-1, -1)
+        car_lane_pos = min(self.highway_len - 1, car_lane_pos)
+
+        try:
+            state_index = self.pos_to_idx(car_lane, car_lane_pos)
+            self.state[state_index] = (-1, -1)
+        except:
+            print("index not in range: %d" % state_index)
+            pos = self.idx_to_pos(state_index)
+            print("pos: lane %d, lane pos %d" % pos)
 
     def update_car(self, car_id, old_lane, old_lane_pos, new_lane, new_lane_pos, curr_speed):
         self.remove_car(old_lane, old_lane_pos)
@@ -158,9 +172,15 @@ class Highway(IRLworld):
             
             self.draw_lane(screen, x, curr_y)
             curr_y += self.lane_height
-            
+    
+        # draw lane seperators
+        curr_y = 0
+        for i in range(self.num_lanes):
+
             self.draw_sep(screen, x, curr_y)
-            curr_y += 1
+            curr_y += self.lane_height
+        self.draw_sep(screen, x, curr_y)
+
 
         # draw cars
         for car in self.car_list:
@@ -170,13 +190,15 @@ class Highway(IRLworld):
                 agent_car = car  
 
         # draw agent car features
+        x = 0
         x, curr_y  = x + 10, curr_y + 10
         if agent_car:
             self.draw_agent_car(agent_car, screen, x, curr_y)
 
-        # draw acceleration, angle, and brake
-        x += 600
-        self.draw_simulator_settings(agent_car, screen, x, curr_y)
+            # draw acceleration, angle, and brake
+            x += 600
+
+            self.draw_simulator_settings(agent_car, screen, x, curr_y)
 
         # draw highway state
         x = screen_width - 400
