@@ -2,7 +2,7 @@
 import pygame
 from constants import *
 
-CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 250
+CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 150
 pygame.time.set_timer(CAR_MOVE_EVENT, t)
 
 def move_cars(car_list, agent_car):
@@ -20,9 +20,10 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE):
         DONE = True 
 
     # toggle pause
-    if (event.type == pygame.KEYDOWN and event.key == pygame.K_p):
+    if ((event.type == pygame.KEYDOWN and event.key == pygame.K_p) or \
+        event.type == pygame.JOYBUTTONDOWN):
+        
         PAUSE = not PAUSE
-        print(highway) 
 
     if PAUSE:
         return (DONE, PAUSE)

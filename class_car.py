@@ -44,6 +44,7 @@ class OtherCar(AbstractCar):
 
         if not no_car_ahead:
             car_ahead_speed = self.highway.idx_to_state(curr_idx - 1)[1]
+            print("changing speed: car_ahead_speed %f" % car_ahead_speed)
             self.speed = min(self.speed, car_ahead_speed) # don't speed up
 
     # returns DONE = False since other cars don't collide with one another
@@ -79,7 +80,7 @@ class AgentCar(AbstractCar):
         curr_feature = self.get_feature()
         self.trajectory.append(curr_feature)
                 
-        reached_end = self.lane_pos >= self.highway.highway_len
+        reached_end = self.lane_pos >= self.highway.highway_len - 1
         game_ended = collision or reached_end
 
         if game_ended:

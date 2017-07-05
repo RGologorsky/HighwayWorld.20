@@ -52,6 +52,7 @@ class AbstractCar(object):
 
         return (lane, lane_pos)
 
+    # straight collision
     def is_collision(self, new_lane, new_lane_pos):
         behind_pos = max(0,new_lane_pos - self.WIDTH)
         ahead_pos =  min(new_lane_pos + self.WIDTH, self.highway.highway_len-1)
@@ -81,9 +82,11 @@ class AbstractCar(object):
         self.y = (self.lane + 0.5) * self.highway.lane_height
 
     def normal_speed(self):
-        if   self.lane == 0:                          mu, sigma = 10, 0.2
-        elif self.lane == self.highway.num_lanes - 1: mu, sigma = 6, 0.2
-        else:                                         mu, sigma = 3, 0.2
+        sigma = 1;
+
+        if   self.lane == 0:                          mu = 5
+        elif self.lane == self.highway.num_lanes - 1: mu = 4
+        else:                                         mu = 3
 
         self.speed = np.random.normal(mu, sigma, 1)[0]
 
@@ -131,10 +134,19 @@ class AbstractCar(object):
         return False
 
     def update_speed(self):
-        new_speed = self.speed + 3*self.acceleration - 3*self.brake
+        alpha = 0.2
+
+        new_speed = self.speed + 2 * self.acceleration - 3 * self.brake
+
+        # acceleration friction
+        if self.acceleration != 0:
+            new_speed -= alpha * self.speed
 
         if self.is_legal_speed(new_speed): 
             self.speed = new_speed
+
+        self.highway.update_car(self.id, self.lane, self.lane_pos, \
+                                    self.lane, self.lane_pos, self.speed)
 
     def __eq__(self, other):
         return self.id == other.id
@@ -151,9 +163,9 @@ class AbstractCar(object):
         self.init_pixel_pos()
 
         self.highway.car_list.append(self)
-        self.highway.add_car(self.id, self.lane, self.lane_pos, self. speed)
+        self.highway.add_car(self.id, self.lane, self.lane_pos, self.speed)
 
-
+        print(self.highway)
         # # features = #steps to car ahead/behind, its speed and my car speed
         # # for each lane
         # self.num_features = self.highway.num_lanes * 4 + 1
