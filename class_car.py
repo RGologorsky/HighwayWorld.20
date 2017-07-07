@@ -63,6 +63,8 @@ class AgentCar(AbstractCar):
         self.trajectory.append(self.get_feature())
 
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
+        AbstractCar.reset_counter();
+
         super().__init__(highway, lane, lane_pos, speed)
         file = AbstractCar.data + "/agent_car.png"
         self.image_car = pygame.image.load(file).convert_alpha()

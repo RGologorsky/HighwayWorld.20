@@ -13,11 +13,15 @@ class AbstractCar(AbstractCarMixin, object):
     __metaclass__ = ABCMeta
 
     # counter = itertools.count(1)
+
+    counter = itertools.count(1)
     
     min_speed = 0.1
     max_speed = 20
     
     # init functions
+    def reset_counter():
+        AbstractCar.counter = itertools.count(1)
 
     # start cars in the middle of their lane
     def init_pixel_pos(self):
@@ -103,8 +107,6 @@ class AbstractCar(AbstractCarMixin, object):
                                     self.lane, self.lane_pos, self.speed)
    
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
-        counter = itertools.count(1)
-        self.counter = counter
         self.id           = next(self.counter)
         self.highway      = highway
         self.acceleration = 0

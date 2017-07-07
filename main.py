@@ -18,11 +18,12 @@ from game_events import check_event
 # general tweakable parameters
 num_lanes = 3
 highway_len = 700
-num_other_cars = 0
+num_other_cars = 5
 
 def start():
     # setup highway, agent car, simulator, and other cars.
     highway = Highway(num_lanes=num_lanes, highway_len=highway_len)
+    highway.car_list = []
     
     agent_car = AgentCar(highway, lane_pos = 0)
     simulator = Simulator(agent_car)
@@ -34,7 +35,6 @@ def start():
 
     print("Restart")
     return (highway, agent_car, simulator)
-
 
 def main():
     DONE = False
