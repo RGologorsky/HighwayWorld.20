@@ -18,9 +18,8 @@ class Highway(HighwayMixin, IRLworld):
     # state vector:  index corresponds to lane and lane_positino 
     # value = (car id, car_speed) at lane and lane_position given by index
     
-    car_list = []
     
-    def __init__(self,num_lanes=3, highway_len = 300, 
+    def __init__(self,num_lanes=3, highway_len = 700, 
                     max_num_cars=10, discount = 0.8):
 
         self.num_lanes = num_lanes
@@ -29,6 +28,8 @@ class Highway(HighwayMixin, IRLworld):
         # for each position (lane, lane_pos), state = (car id, car speed)
         self.num_states = num_lanes * highway_len
         self.state = [(-1, -1)] * self.num_states
+
+        self.car_list = []
 
 
     def pos_to_idx(self, curr_lane, curr_lane_pos):

@@ -12,10 +12,8 @@ class AbstractCar(AbstractCarMixin, object):
 
     __metaclass__ = ABCMeta
 
-    counter = itertools.count(1)
+    # counter = itertools.count(1)
     
-    highway = []
-
     min_speed = 0.1
     max_speed = 20
     
@@ -62,7 +60,6 @@ class AbstractCar(AbstractCarMixin, object):
 
     # update pos returns whether updated position caused collision
     def update_pos(self, allow_collision = False):
-        print(self.angle)
         angle = radians(self.angle)
 
         # self.heading += self.speed * angle
@@ -106,6 +103,8 @@ class AbstractCar(AbstractCarMixin, object):
                                     self.lane, self.lane_pos, self.speed)
    
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
+        counter = itertools.count(1)
+        self.counter = counter
         self.id           = next(self.counter)
         self.highway      = highway
         self.acceleration = 0
@@ -121,7 +120,6 @@ class AbstractCar(AbstractCarMixin, object):
         self.highway.car_list.append(self)
         self.highway.add_car(self.id, self.lane, self.lane_pos, self.speed)
 
-        print(self.highway)
         # # features = #steps to car ahead/behind, its speed and my car speed
         # # for each lane
         # self.num_features = self.highway.num_lanes * 4 + 1

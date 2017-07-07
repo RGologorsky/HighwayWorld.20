@@ -37,3 +37,9 @@ CLUTCH_PEDAL_AXIS      = 3
 
 AXIS_NAMES = ["STEERING_WHEEL_AXIS", "ACCELERATOR_PEDAL_AXIS", \
               "BRAKE_PEDAL_AXIS", "CLUTCH_PEDAL_AXIS"]
+
+# joystick buttons
+A = 0
+B = 1
+X = 2
+Y = 3
