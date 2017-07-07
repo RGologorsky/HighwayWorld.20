@@ -13,6 +13,7 @@ GREEN = (0, 255,   0)
 RED = (255,   0,   0)
 BLUE = (0,   0,   255)
 GRAY = (211,211,211)
+YELLOW = (255,255,0)
 
 # game events
 LEFT = -1; RIGHT = 1

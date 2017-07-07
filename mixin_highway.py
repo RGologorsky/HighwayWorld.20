@@ -31,7 +31,12 @@ class HighwayMixin(object):
         pygame.draw.rect(screen, self.lane_color, [x,y,self.highway_len,self.lane_height], 0)
 
     def draw_sep(self, screen, x, y):
-        pygame.draw.line(screen, self.lane_sep_color, (x,y), (x + self.highway_len, y), 1)
+        step_size = int(self.highway_len/20)
+        sep_size = int(step_size/2)
+        for i in range(0, self.highway_len, step_size):
+            curr_x = x + i
+            pygame.draw.line(screen, self.lane_sep_color, \
+                (curr_x,y), (curr_x + sep_size, y), 2)
 
 
     def draw_highway_state(self, screen, x, y):

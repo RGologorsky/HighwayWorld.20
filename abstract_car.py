@@ -20,10 +20,13 @@ class AbstractCar(AbstractCarMixin, object):
     max_speed = 20
     
     # init functions
+
+    # start cars in the middle of their lane
     def init_pixel_pos(self):
         self.x = self.lane_pos
         self.y = (self.lane + 0.5) * self.highway.lane_height
 
+    # set speed sampled from a Normal distribution
     def normal_speed(self):
         sigma = 1;
 
@@ -37,11 +40,13 @@ class AbstractCar(AbstractCarMixin, object):
             self.speed = np.random.normal(mu, sigma, 1)[0]
         print("Set speed to %1.1f" % self.speed)
     
+    # set initial speed
     def init_speed(self, speed, normal=True):
         if speed != -1: self.speed = speed
         elif normal:    self.normal_speed()
         else:           self.rand_speed()
 
+    # set initial lane and lane position
     def init_place(self, lane, lane_pos):
         lane     = lane     if     lane != -1 else self.rand_lane()
         lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
@@ -54,8 +59,16 @@ class AbstractCar(AbstractCarMixin, object):
         self.lane_pos = lane_pos
     
     # update functions
+
+    # update pos returns whether updated position caused collision
     def update_pos(self, allow_collision = False):
         angle = radians(self.angle)
+
+        # self.heading += self.speed * angle
+
+        # new_x = self.x + self.speed * cos(self.heading)
+        # new_y = self.y - self.speed * sin(self.heading)
+        
         new_x = self.x + self.speed * cos(angle)
         new_y = self.y - self.speed * sin(angle)
 
@@ -67,6 +80,7 @@ class AbstractCar(AbstractCarMixin, object):
             if allow_collision or not yes_collision:
                 self.highway.update_car(self.id, self.lane, self.lane_pos, \
                                     new_lane, new_lane_pos, self.speed)
+                
                 self.x, self.y           = new_x, new_y
                 self.lane, self.lane_pos = new_lane, new_lane_pos
 
@@ -74,13 +88,15 @@ class AbstractCar(AbstractCarMixin, object):
         return False
 
     def update_speed(self):
-        alpha = 0.2
+        friction = 0.2
 
-        new_speed = self.speed + 2 * self.acceleration - 3 * self.brake
+        new_speed = self.speed
 
-        # acceleration friction
         if self.acceleration != 0:
-            new_speed -= alpha * self.speed
+            new_speed += 2* self.acceleration - friction*self.speed
+
+        if self.brake != 0:
+            new_speed -= 3* self.brake - friction*self.speed
 
         if self.is_legal_speed(new_speed): 
             self.speed = new_speed
@@ -95,6 +111,8 @@ class AbstractCar(AbstractCarMixin, object):
         self.brake        = 0
         self.angle        = 0
 
+        self.heading      = 0
+
         self.init_place(lane, lane_pos)
         self.init_speed(speed, normal=True)
         self.init_pixel_pos()
@@ -106,12 +124,6 @@ class AbstractCar(AbstractCarMixin, object):
         # # features = #steps to car ahead/behind, its speed and my car speed
         # # for each lane
         # self.num_features = self.highway.num_lanes * 4 + 1
-
-    # rotate car image around center
-    def rotate(self):
-        self.image_car = pygame.transform.rotate(self.original_image, self.angle)
-        rect = self.image_car.get_rect()
-        rect.center = (self.x, self.y)  
         
 
     def move(self, allow_collision = False):
