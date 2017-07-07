@@ -3,8 +3,8 @@ import pygame
 
 
 # Set the width and height of the screen
-screen_width = 1300
-screen_height = 500
+screen_width = 900
+screen_height = 700
 
 # colors
 BLACK = (0,   0,   0)

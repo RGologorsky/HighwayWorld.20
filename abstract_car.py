@@ -23,8 +23,8 @@ class AbstractCar(AbstractCarMixin, object):
 
     # start cars in the middle of their lane
     def init_pixel_pos(self):
-        self.x = self.lane_pos
-        self.y = (self.lane + 0.5) * self.highway.lane_height
+        self.y = self.highway.highway_len - self.lane_pos
+        self.x = (self.lane + 0.5) * self.highway.lane_width
 
     # set speed sampled from a Normal distribution
     def normal_speed(self):
@@ -62,6 +62,7 @@ class AbstractCar(AbstractCarMixin, object):
 
     # update pos returns whether updated position caused collision
     def update_pos(self, allow_collision = False):
+        print(self.angle)
         angle = radians(self.angle)
 
         # self.heading += self.speed * angle
@@ -69,8 +70,8 @@ class AbstractCar(AbstractCarMixin, object):
         # new_x = self.x + self.speed * cos(self.heading)
         # new_y = self.y - self.speed * sin(self.heading)
         
-        new_x = self.x + self.speed * cos(angle)
-        new_y = self.y - self.speed * sin(angle)
+        new_x = self.x + self.speed * sin(angle)
+        new_y = self.y - self.speed * cos(angle)
 
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 

@@ -20,7 +20,7 @@ class Highway(HighwayMixin, IRLworld):
     
     car_list = []
     
-    def __init__(self,num_lanes=3, highway_len = 1100, 
+    def __init__(self,num_lanes=3, highway_len = 300, 
                     max_num_cars=10, discount = 0.8):
 
         self.num_lanes = num_lanes

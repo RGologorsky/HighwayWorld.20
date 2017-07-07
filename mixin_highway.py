@@ -9,6 +9,9 @@ class HighwayMixin(object):
     lane_color     = GRAY
     
     lane_height = 76 # little more than Car.height
+    lane_width = 76 # little more than Car.height
+
+    X_OFFSET = 100
 
     # STRING/PRINTING functions
     def __str__(self):
@@ -28,15 +31,16 @@ class HighwayMixin(object):
     # DRAWING FUNCTIONS
 
     def draw_lane(self, screen, x, y):
-        pygame.draw.rect(screen, self.lane_color, [x,y,self.highway_len,self.lane_height], 0)
+        pygame.draw.rect(screen, self.lane_color, \
+            [x,y,self.lane_height, self.highway_len], 0)
 
     def draw_sep(self, screen, x, y):
         step_size = int(self.highway_len/20)
         sep_size = int(step_size/2)
         for i in range(0, self.highway_len, step_size):
-            curr_x = x + i
+            curr_y = y + i
             pygame.draw.line(screen, self.lane_sep_color, \
-                (curr_x,y), (curr_x + sep_size, y), 2)
+                (x,curr_y), (x, curr_y + sep_size), 2)
 
 
     def draw_highway_state(self, screen, x, y):
@@ -48,23 +52,23 @@ class HighwayMixin(object):
     def draw_simulator_settings(self, agent_car, screen, x, y):
         simulator_settings = agent_car.print_simulator_settings()
         render_multi_line(screen, simulator_settings, x, y)
-        
+    
     def draw(self, screen):
         # start at top-left
-        x, curr_y = 0, 0
+        curr_x, y = 0, 0
         agent_car = None
         
         # draw lanes
         for i in range(self.num_lanes):
-            self.draw_lane(screen, x, curr_y)
-            curr_y += self.lane_height
+            self.draw_lane(screen, curr_x, y)
+            curr_x += self.lane_width
     
         # draw lane seperators
-        curr_y = 0
+        curr_x = 0
         for i in range(self.num_lanes):
-            self.draw_sep(screen, x, curr_y)
-            curr_y += self.lane_height
-        self.draw_sep(screen, x, curr_y)
+            self.draw_sep(screen, curr_x, y)
+            curr_x += self.lane_width
+        self.draw_sep(screen, curr_x, y)
 
         # draw cars
         for car in self.car_list:
@@ -74,14 +78,16 @@ class HighwayMixin(object):
                 agent_car = car  
 
         # draw agent car features
-        x, curr_y  = 10, curr_y + 10
+        x, curr_y  = self.lane_width * self.num_lanes + 10, 10
         if agent_car:
             self.draw_agent_car(agent_car, screen, x, curr_y)
 
             # draw acceleration, angle, and brake
-            x += 600
+            curr_y += 200
             self.draw_simulator_settings(agent_car, screen, x, curr_y)
 
         # draw highway state
-        x = screen_width - 400
+        curr_y += 150
         self.draw_highway_state(screen, x, curr_y) 
+
+    

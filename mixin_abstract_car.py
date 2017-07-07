@@ -7,10 +7,13 @@ from random import randint
 class AbstractCarMixin(object):
     
     """ Car image size width = 228, height = 128 """
-    WIDTH = 104 #228
-    HEIGHT = 48 #128
+    # WIDTH = 104 #228
+    # HEIGHT = 48 #128
 
-    data = "smaller_data_transparent_cropped"
+    WIDTH = 48 #228
+    HEIGHT = 104 #128
+
+    data = "rotated_data"
 
     def __eq__(self, other):
         return self.id == other.id
@@ -85,8 +88,8 @@ class AbstractCarMixin(object):
         return (self.x, self.y)
 
     def pixel_to_lane_pos(self, x, y):
-        lane     = int(y / self.highway.lane_height)
-        lane_pos = int(round(x))
+        lane     = int(x / self.highway.lane_width)
+        lane_pos = int(round(self.highway.highway_len - y))
 
         return (lane, lane_pos)
 
@@ -139,7 +142,7 @@ class AbstractCarMixin(object):
 
     # rotate car image around center
     def rotate(self):
-        self.image_car = pygame.transform.rotate(self.original_image, self.angle)
+        self.image_car = pygame.transform.rotate(self.original_image, -1 * self.angle)
         rect = self.image_car.get_rect()
         rect.center = (self.x, self.y)  
 
