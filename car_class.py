@@ -25,24 +25,12 @@ class OtherCar(AbstractCar):
         # if (scar_ahead_speed )
     # checks if we are keeping our distance; adjusts speed if needed
     def check_distance(self, lane, lane_pos):
-        my_idx = self.highway.pos_to_idx(lane, lane_pos)
-
-        # scan front for close cars ahead
-        ahead_idx = self.highway.pos_to_idx(lane,  
-                    min(self.highway.highway_len-1, \
-                        lane_pos + self.WIDTH + self.keep_distance))
-
-        no_car_ahead = True
-        curr_idx = my_idx
-        
-        while (no_car_ahead and curr_idx <= ahead_idx):
-            neighbor = self.highway.idx_to_state(curr_idx)
-            no_car_ahead = (neighbor == (-1, -1)) or (neighbor[0] == self.id)
-            curr_idx += 1
-
-        if not no_car_ahead:
-            car_ahead_speed = self.highway.idx_to_state(curr_idx - 1)[1]
-            self.speed = min(self.speed, car_ahead_speed) # don't speed up
+        for car in self.highway.car_list:
+            if car.lane == lane:
+                ahead_pos = lane_pos + self.HEIGHT + self.keep_distance
+                if not ahead_pos <= car.lane_pos:
+                    self.speed = car.speed # set speed to car ahead of us
+            
 
     # returns DONE = False since other cars don't collide with one another
     def move(self):

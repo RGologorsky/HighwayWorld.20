@@ -3,7 +3,7 @@
 
 import pygame
 from random import randint
-from math import cos, sin
+from math import radians, cos, sin
 from constants import *
 from helpers import *
 
@@ -106,6 +106,8 @@ class AbstractCarMixin(object):
 
     def rotate_point(self, orig_pt, center_pt, angle):
 
+        angle = radians(angle)
+
         (center_x, old_center_y) = center_pt
         (x, old_y) = orig_pt
 
@@ -118,8 +120,8 @@ class AbstractCarMixin(object):
 
         # perform rotation (multiply rotation matrix)
         # here angle is complement
-        new_delta_x = x * cos(angle) - y * sin(angle)
-        new_delta_y = x * sin(angle) + y * cos(angle)
+        new_delta_x = delta_x * cos(angle) - delta_y * sin(angle)
+        new_delta_y = delta_x * sin(angle) + delta_y * cos(angle)
 
         # translate the point back
         new_x = center_x + new_delta_x
@@ -150,8 +152,10 @@ class AbstractCarMixin(object):
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
             self.get_corners(new_x, new_y, new_angle)
 
-        # see if corners collide with any car on the road
+        # see if corners collide with any other car on the road
         for car in self.highway.car_list:
+            if car == self:
+                continue
             # Rect(left, top, width, height)
             (left, top) = center_to_upper_left(self, car.x, car.y)
             car_rect = pygame.Rect(left, top, self.WIDTH, self.HEIGHT)

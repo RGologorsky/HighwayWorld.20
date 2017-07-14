@@ -16,12 +16,9 @@ class HighwayMixin(object):
     # STRING/PRINTING functions
     def __str__(self):
         res = "Highway State. \n"
-        for idx in range(self.num_states):
-            state = self.idx_to_state(idx)
-            if state != (-1, -1):
-                lane, lane_pos = self.idx_to_pos(idx)
-                res += ("Lane = %d. Pos = %3d. Speed = %2.1f. ID = %2d. \n" % \
-                    (lane, lane_pos, state[1], state[0]))
+        for car in self.car_list:
+            res += ("Lane = %d. Pos = %3d. Speed = %2.1f. ID = %2d. \n" % \
+                (car.lane, car.lane_pos, car.speed, car.id))
         return res
 
     def print_state(self):

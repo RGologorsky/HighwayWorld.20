@@ -29,40 +29,6 @@ class Highway(HighwayMixin, IRLworld):
         self.num_lanes = num_lanes
         self.highway_len = highway_len
 
-        # for each position (lane, lane_pos), state = (car id, car speed)
-        self.num_states = num_lanes * highway_len
-        self.state = [(-1, -1)] * self.num_states
-
-
-    def pos_to_idx(self, curr_lane, curr_lane_pos):
-        return curr_lane * self.highway_len + curr_lane_pos
-
-    def idx_to_pos(self, index):
-        return (index/self.highway_len, index % self.highway_len)
-
-    def idx_to_state(self, idx):
-        if idx < 0 or idx >= self.num_states:
-            print("Idx to State. Out of bounds index: %d" % idx)
-            traceback.print_stack()
-        return self.state[idx]
-
-    def pos_to_state(self, lane, lane_pos):
-        idx = self.pos_to_idx(lane, lane_pos)
-        return self.idx_to_state(idx)
-
-    def set_state_from_idx(self, idx, id, speed):
-        try: 
-            self.state[idx] = (id, speed)
-        except:
-            print("idx not in range: %d" % idx)
-            pos = self.idx_to_pos(idx)
-            print("pos: lane %d, lane pos %d" % pos)
-
-    def set_state_from_pos(self, lane, lane_pos, id, speed):
-        idx = self.pos_to_idx(lane, lane_pos)
-        self.set_state_from_idx(idx, id, speed)
-
-
     # returns (id, #steps away, speed) of closest car in specified lane & dir
     def get_closest_car(self, lane, lane_pos, dir):
         # if no such lane
@@ -70,18 +36,23 @@ class Highway(HighwayMixin, IRLworld):
            not in_range(lane_pos, 0, self.highway_len - 1): 
             return (-1, -1, -1)
 
-        num_steps_away = 0
-        near_state = (-1, -1)
+        min_num_steps_away = self.highway_len + 10 # impossible
+        closest_car = None
 
-        while (in_range(lane_pos+num_steps_away, 0, self.highway_len - 1) and \
-                    near_state == (-1, -1)):
-                
-                near_state = self.pos_to_state(lane, lane_pos + num_steps_away)
-                num_steps_away += dir
+        for car in self.car_list:
+            num_steps_away = dir * (car.lane_pos - lane_pos)
+            if car.lane == lane and num_steps_away >= 0:
+
+                 if (num_steps_away < min_num_steps_away):
+                    min_num_steps_away = num_steps_away
+                    closest_car = car
+
             
         # no nearby cars in specified lane and dir
-        if near_state == (-1, -1): return (-1, -1, -1)
-        return (near_state[0], abs(num_steps_away), near_state[1])
+        if min_num_steps_away == self.highway_len + 10 : 
+            return (-1, -1, -1)
+
+        return (closest_car.id, min_num_steps_away, closest_car.speed)
 
 
     # returns (id, #steps away, speed) of the closest cars ahead/behind 
@@ -110,25 +81,14 @@ class Highway(HighwayMixin, IRLworld):
         return closest_cars
 
 
-    def add_car(self, car_id, car_lane, car_lane_pos, car_speed):
-        car_lane_pos = min(self.highway_len - 1, car_lane_pos)
-        
-        self.set_state_from_pos(car_lane, car_lane_pos, car_id, car_speed)
+    def add_car(self, car):
+        self.car_list.append(car)
 
-    def remove_car(self, car_lane, car_lane_pos):
-        car_lane_pos = min(self.highway_len - 1, car_lane_pos)
-
+    def remove_car(self, car):
         try:
-            state_index = self.pos_to_idx(car_lane, car_lane_pos)
-            self.state[state_index] = (-1, -1)
+            self.car_list.remove(car)
         except:
-            print("index not in range: %d" % state_index)
-            pos = self.idx_to_pos(state_index)
-            print("pos: lane %d, lane pos %d" % pos)
-
-    def update_car(self, car_id, old_lane, old_lane_pos, new_lane, new_lane_pos, curr_speed):
-        self.remove_car(old_lane, old_lane_pos)
-        self.add_car(car_id, new_lane, new_lane_pos, curr_speed)
+            print("Car not in car list")
 
     def set_all_back(self, amt_back):
         for car in self.car_list:

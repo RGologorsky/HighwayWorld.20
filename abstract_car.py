@@ -83,9 +83,6 @@ class AbstractCar(AbstractCarMixin, object):
             yes_collision = self.is_collision(new_x, new_y, self.angle)
             
             if allow_collision or not yes_collision:
-                self.highway.update_car(self.id, self.lane, self.lane_pos, \
-                                    new_lane, new_lane_pos, self.speed)
-                
                 self.x, self.y           = new_x, new_y
                 self.lane, self.lane_pos = new_lane, new_lane_pos
 
@@ -106,8 +103,6 @@ class AbstractCar(AbstractCarMixin, object):
         if self.is_legal_speed(new_speed): 
             self.speed = new_speed
 
-        self.highway.update_car(self.id, self.lane, self.lane_pos, \
-                                    self.lane, self.lane_pos, self.speed)
    
     def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
         self.id           = next(self.counter)
@@ -120,26 +115,16 @@ class AbstractCar(AbstractCarMixin, object):
         self.init_speed(speed, normal=True)
         self.init_pixel_pos()
 
-        self.highway.car_list.append(self)
-        self.highway.add_car(self.id, self.lane, self.lane_pos, self.speed)
-
-        # # features = #steps to car ahead/behind, its speed and my car speed
-        # # for each lane
-        # self.num_features = self.highway.num_lanes * 4 + 1
-        
+        self.highway.add_car(self)
 
     def move(self, allow_collision = False):
         reached_end = self.lane_pos >= self.highway.highway_len - 1
 
-        if reached_end:
-            self.highway.remove_car(self.lane, self.lane_pos)
-            print("Removed car from our highway state")
-
-            try:    self.highway.car_list.remove(self)
-            except: print("Failed to remove car from highway car list")
+        # if reached_end:
+            # self.highway.remove_car(self)
+            # print("Removed car from our highway state")
             
-            
-            return
+            # return
 
         self.rotate()
         self.update_speed()
@@ -164,9 +149,6 @@ class AbstractCar(AbstractCarMixin, object):
 
         # cars can disappear behind start of highway (lane_pos < 0)
 
-        self.highway.update_car(self.id, self.lane, self.lane_pos, \
-                                new_lane, new_lane_pos, self.speed)
-                
         self.y        = new_y
         self.lane_pos = new_lane_pos
 
@@ -179,8 +161,6 @@ class AbstractCar(AbstractCarMixin, object):
         new_lane = self.lane + dir
         
         if self.is_legal_lane(new_lane):
-            self.highway.update_car(self.id, self.lane, self.lane_pos, \
-                                    new_lane, self.lane_pos, self.speed)
 
             self.lane = new_lane
             self.x    += dir * self.highway.lane_width
