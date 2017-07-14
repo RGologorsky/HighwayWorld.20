@@ -1,3 +1,26 @@
+# def is_collision(self, new_lane, new_lane_pos):
+#         behind_pos = max(0,new_lane_pos - self.WIDTH)
+#         ahead_pos =  min(new_lane_pos + self.WIDTH, self.highway.highway_len-1)
+
+#         my_idx      = self.highway.pos_to_idx(new_lane, new_lane_pos)
+#         behind_idx  = self.highway.pos_to_idx(new_lane, behind_pos)
+#         ahead_idx   = self.highway.pos_to_idx(new_lane, ahead_pos)
+
+#         no_crash = True
+#         curr_idx = behind_idx
+        
+#         while (no_crash and curr_idx <= ahead_idx):
+#             neighbor = self.highway.idx_to_state(curr_idx)
+#             no_crash = (neighbor == (-1, -1)) or (neighbor[0] == self.id)
+#             curr_idx += 1
+
+#             if not no_crash:
+#                 print("crash car idx %d" % (curr_idx - 1))
+
+#         if (not no_crash):
+#             print ("collision occured, car id %d" % self.id)
+#         return (not no_crash)
+        
 # Number of joysticks: 1
 # Joystick 0
 # Joystick name: G920 Driving Force Racing Wheel for Xbox One

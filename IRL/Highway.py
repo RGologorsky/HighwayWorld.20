@@ -5,7 +5,7 @@ Implements the Highway World 2.0 environment
 import numpy as np
 import numpy.random as rn
 
-from irlworld import *
+# from irlworld import *
 from constants import *
 
 class Highwayworld(IRLworld):

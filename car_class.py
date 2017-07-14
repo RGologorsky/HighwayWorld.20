@@ -1,8 +1,6 @@
 import pygame
-from constants import L,R,S,F,Z # actions
+from constants import *
 from abstract_car import AbstractCar
-import numpy as np
-from random import randint
 
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
@@ -44,7 +42,6 @@ class OtherCar(AbstractCar):
 
         if not no_car_ahead:
             car_ahead_speed = self.highway.idx_to_state(curr_idx - 1)[1]
-            print("changing speed: car_ahead_speed %f" % car_ahead_speed)
             self.speed = min(self.speed, car_ahead_speed) # don't speed up
 
     # returns DONE = False since other cars don't collide with one another
@@ -73,6 +70,8 @@ class AgentCar(AbstractCar):
         
 
     # returns whether game is DONE
+    # when agent car moves, new highway track comes down (eg stays in place)
+    # moves all other cars/reference point down
     def move(self):
 
         collision = super().move(allow_collision = True);
@@ -81,6 +80,7 @@ class AgentCar(AbstractCar):
         self.trajectory.append(Z)
         curr_feature = self.get_feature()
         self.trajectory.append(curr_feature)
+
                 
         reached_end = self.lane_pos >= self.highway.highway_len - 1
         game_ended = collision or reached_end
@@ -88,7 +88,9 @@ class AgentCar(AbstractCar):
         if game_ended:
             if collision: print("Collision Occurred")
             if reached_end: print("Successfully Reached End of Track")
-            
+                    
+        self.set_all_cars_back()
+
         return game_ended
 
     def change_lane(self, dir):

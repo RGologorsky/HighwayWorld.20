@@ -1,11 +1,10 @@
 import pygame
-from constants import *
-import numpy as np
-from irlworld import *
 import traceback
 
-from mixin_highway import HighwayMixin
-
+from constants import *
+from helpers import *
+from IRL.irlworld  import *
+from highway_mixin import HighwayMixin
 
 """
 Implements the Highway World 2.0 environment
@@ -19,6 +18,10 @@ class Highway(HighwayMixin, IRLworld):
     # value = (car id, car_speed) at lane and lane_position given by index
     
     car_list = []
+    reference_pts = []
+
+    def add_reference_pt(self, tree):
+        self.reference_pts.append(tree)
     
     def __init__(self,num_lanes=3, highway_len = 700, 
                     max_num_cars=10, discount = 0.8):
@@ -107,10 +110,10 @@ class Highway(HighwayMixin, IRLworld):
         return closest_cars
 
 
-    def add_car(self, car_id, car_lane, car_lane_pos, curr_speed):
+    def add_car(self, car_id, car_lane, car_lane_pos, car_speed):
         car_lane_pos = min(self.highway_len - 1, car_lane_pos)
         
-        self.set_state_from_pos(car_lane, car_lane_pos, car_id, curr_speed)
+        self.set_state_from_pos(car_lane, car_lane_pos, car_id, car_speed)
 
     def remove_car(self, car_lane, car_lane_pos):
         car_lane_pos = min(self.highway_len - 1, car_lane_pos)
@@ -126,3 +129,10 @@ class Highway(HighwayMixin, IRLworld):
     def update_car(self, car_id, old_lane, old_lane_pos, new_lane, new_lane_pos, curr_speed):
         self.remove_car(old_lane, old_lane_pos)
         self.add_car(car_id, new_lane, new_lane_pos, curr_speed)
+
+    def set_all_back(self, amt_back):
+        for car in self.car_list:
+            car.set_car_back(amt_back)
+
+        for ref_pt in self.reference_pts:
+            ref_pt.set_back(amt_back)

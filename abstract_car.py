@@ -1,18 +1,18 @@
-from abc import ABCMeta, abstractmethod
 import itertools
-import pygame
-from constants import *
-from random import randint
 import numpy as np
-import itertools
-from math import cos, sin, radians
-from mixin_abstract_car import AbstractCarMixin
+
+from constants import *
+from helpers import *
+
+from random import randint
+from math   import cos, sin, radians
+from abstract_car_mixin import AbstractCarMixin
+
+from abc import ABCMeta, abstractmethod
 
 class AbstractCar(AbstractCarMixin, object):
 
     __metaclass__ = ABCMeta
-
-    # counter = itertools.count(1)
 
     counter = itertools.count(1)
     
@@ -23,13 +23,17 @@ class AbstractCar(AbstractCarMixin, object):
     def reset_counter():
         AbstractCar.counter = itertools.count(1)
 
+    def lane_center_to_pixel_pos(self, lane, lane_pos):
+        x = (lane + 0.5) * self.highway.lane_width
+        y = self.highway.highway_len - lane_pos
+        return (x, y)
+
     # start cars in the middle of their lane
     def init_pixel_pos(self):
-        self.y = self.highway.highway_len - self.lane_pos
-        self.x = (self.lane + 0.5) * self.highway.lane_width
+        self.x, self.y = self.lane_center_to_pixel_pos(self.lane, self.lane_pos)
 
     # set speed sampled from a Normal distribution
-    def normal_speed(self):
+    def init_normal_speed(self):
         sigma = 1;
 
         if   self.lane == 0:                          mu = 5
@@ -45,7 +49,7 @@ class AbstractCar(AbstractCarMixin, object):
     # set initial speed
     def init_speed(self, speed, normal=True):
         if speed != -1: self.speed = speed
-        elif normal:    self.normal_speed()
+        elif normal:    self.init_normal_speed()
         else:           self.rand_speed()
 
     # set initial lane and lane position
@@ -53,9 +57,12 @@ class AbstractCar(AbstractCarMixin, object):
         lane     = lane     if     lane != -1 else self.rand_lane()
         lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
 
-        while (self.is_collision(lane, lane_pos)):
+        x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
+
+        while (self.is_collision(x, y, self.angle)):
             lane     = self.rand_lane()
             lane_pos = self.rand_lane_pos()
+            x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
 
         self.lane     = lane
         self.lane_pos = lane_pos
@@ -66,10 +73,6 @@ class AbstractCar(AbstractCarMixin, object):
     def update_pos(self, allow_collision = False):
         angle = radians(self.angle)
 
-        # self.heading += self.speed * angle
-
-        # new_x = self.x + self.speed * cos(self.heading)
-        # new_y = self.y - self.speed * sin(self.heading)
         
         new_x = self.x + self.speed * sin(angle)
         new_y = self.y - self.speed * cos(angle)
@@ -77,7 +80,7 @@ class AbstractCar(AbstractCarMixin, object):
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
         if self.is_legal_lane(new_lane): 
-            yes_collision = self.is_collision(new_lane, new_lane_pos)
+            yes_collision = self.is_collision(new_x, new_y, self.angle)
             
             if allow_collision or not yes_collision:
                 self.highway.update_car(self.id, self.lane, self.lane_pos, \
@@ -113,8 +116,6 @@ class AbstractCar(AbstractCarMixin, object):
         self.brake        = 0
         self.angle        = 0
 
-        self.heading      = 0
-
         self.init_place(lane, lane_pos)
         self.init_speed(speed, normal=True)
         self.init_pixel_pos()
@@ -144,23 +145,6 @@ class AbstractCar(AbstractCarMixin, object):
         self.update_speed()
         collision = self.update_pos(allow_collision)
         return collision
-
-    # Keyboard input or regulated speed change to car in front
-    def change_lane(self, dir):
-        new_lane = self.lane + dir
-        
-        if self.is_legal_lane(new_lane):
-            self.highway.update_car(self.id, self.lane, self.lane_pos, \
-                                    new_lane, self.lane_pos, self.speed)
-
-            self.lane = new_lane
-            self.y    += dir * self.highway.lane_height
-        
-    def change_speed(self, speed_change):
-        new_speed = self.speed + speed_change
-        
-        if self.is_legal_speed(new_speed): 
-            self.speed = new_speed
         
 
     # feature = list (id, #steps away, speed) for cars ahead/behind and 
@@ -172,5 +156,40 @@ class AbstractCar(AbstractCarMixin, object):
         closest_cars.append(self.lane)
         closest_cars.append(self.lane_pos)
         return closest_cars
+
+
+    def set_car_back(self, amt_back):        
+        new_y = self.y + amt_back
+        new_lane, new_lane_pos = self.pixel_to_lane_pos(self.x, new_y)
+
+        # cars can disappear behind start of highway (lane_pos < 0)
+
+        self.highway.update_car(self.id, self.lane, self.lane_pos, \
+                                new_lane, new_lane_pos, self.speed)
+                
+        self.y        = new_y
+        self.lane_pos = new_lane_pos
+
+    def set_all_cars_back(self):
+        amt_back = self.speed
+        self.highway.set_all_back(amt_back)
+
+    # Keyboard input or regulated speed change to car in front
+    def change_lane(self, dir):
+        new_lane = self.lane + dir
+        
+        if self.is_legal_lane(new_lane):
+            self.highway.update_car(self.id, self.lane, self.lane_pos, \
+                                    new_lane, self.lane_pos, self.speed)
+
+            self.lane = new_lane
+            self.x    += dir * self.highway.lane_width
+        
+    def change_speed(self, speed_change):
+        new_speed = self.speed + speed_change
+        
+        if self.is_legal_speed(new_speed): 
+            self.speed = new_speed
+
 
 

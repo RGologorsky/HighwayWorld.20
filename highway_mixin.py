@@ -1,7 +1,7 @@
 # Highway Mixin
 # drawing functions and other generally useful functions
 from constants import *
-from drawing_helpers import *
+from helpers import *
 
 class HighwayMixin(object):
 
@@ -42,6 +42,10 @@ class HighwayMixin(object):
             pygame.draw.line(screen, self.lane_sep_color, \
                 (x,curr_y), (x, curr_y + sep_size), 2)
 
+    def draw_sep_line(self, screen, x, y):
+            pygame.draw.line(screen, self.lane_sep_color, \
+                (x,y), (x, y + self.highway_len), 2)
+
 
     def draw_highway_state(self, screen, x, y):
         render_multi_line(screen, str(self), x, y)
@@ -68,7 +72,8 @@ class HighwayMixin(object):
         for i in range(self.num_lanes):
             self.draw_sep(screen, curr_x, y)
             curr_x += self.lane_width
-        self.draw_sep(screen, curr_x, y)
+        self.draw_sep_line(screen, curr_x, y)
+        self.draw_sep_line(screen, 0, y)
 
         # draw cars
         for car in self.car_list:
@@ -78,7 +83,7 @@ class HighwayMixin(object):
                 agent_car = car  
 
         # draw agent car features
-        x, curr_y  = self.lane_width * self.num_lanes + 10, 10
+        x, curr_y  = self.lane_width * self.num_lanes + 100, 10
         if agent_car:
             self.draw_agent_car(agent_car, screen, x, curr_y)
 
