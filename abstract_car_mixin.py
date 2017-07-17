@@ -14,7 +14,7 @@ class AbstractCarMixin(object):
     WIDTH = 48 #228
     HEIGHT = 104 #128
 
-    data = "rotated_data"
+    data = "rot_trans"
 
     # init functions
     def lane_center_to_pixel_pos(self, lane, lane_pos):
@@ -255,6 +255,26 @@ class AbstractCarMixin(object):
         return False
 
 
+    def legal_pos(self, new_x, new_y, new_heading):
+        new_angle = pi/2 - new_heading # angle is angle from y-axis
+        (new_top_left, new_top_right, new_back_left, new_back_right) = \
+            self.get_corners(new_x, new_y, new_angle)
+
+        # see if corners collide with highway
+        
+        # Rect(left, top, width, height)
+        (left, top) = (0,0)
+        highway_rect = pygame.Rect(left,top,self.highway.WIDTH, self.highway.HEIGHT)
+        
+        within_highway = highway_rect.collidepoint(new_top_left) and \
+                    highway_rect.collidepoint(new_top_right) and \
+                    highway_rect.collidepoint(new_back_left) and \
+                    highway_rect.collidepoint(new_back_right)
+
+        return within_highway
+            
+
+
 
     def dist_to_road_boundary(self):
         return in_range(self.x, 0, self.highway.highway_len) and \
@@ -311,7 +331,7 @@ class AbstractCarMixin(object):
         
         screen.blit(self.image_car, upper_left_pos)
         # draw center of car
-        pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 10, 0)
+        # pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 10, 0)
 
 
 

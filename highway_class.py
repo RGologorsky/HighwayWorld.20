@@ -29,6 +29,9 @@ class Highway(HighwayMixin, IRLworld):
         self.num_lanes = num_lanes
         self.highway_len = highway_len
 
+        self.HEIGHT = self.highway_len
+        self.WIDTH = self.num_lanes * self.lane_width
+
     # returns (id, #steps away, speed) of closest car in specified lane & dir
     def get_closest_car(self, lane, lane_pos, dir):
         # if no such lane

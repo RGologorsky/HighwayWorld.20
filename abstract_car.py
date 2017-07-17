@@ -74,28 +74,21 @@ class AbstractCar(AbstractCarMixin, object):
 
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
-        # fixed
-        # new_x, new_y = 500, 200
-        # FIXED PLACE
-        
-        
+      
+
         is_collision = self.is_collision(new_x, new_y, new_heading)
-        
+
+
         if allow_collision or not is_collision:
-            self.x, self.y           = new_x, new_y
-            self.lane, self.lane_pos = new_lane, new_lane_pos
             self.speed               = new_speed
-            self.heading             = new_heading
-        
-        # CHECK IF LEGAL SPEED, LANE, POSIION            
-        
-        # check is legal speed, lane, posiion
-        # if self.is_legal_speed(new_speed): 
-        #     self.speed = new_speed
-
-        # update image of car
-        self.rotate()
-
+            
+             # CHECK IF LEGAL SPEED, LANE, POSIION            
+            if self.legal_pos(new_x, new_y, new_heading):
+                self.x, self.y           = new_x, new_y
+                self.lane, self.lane_pos = new_lane, new_lane_pos
+                self.heading             = new_heading
+                self.rotate()
+                
         return is_collision
         
 
