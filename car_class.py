@@ -1,19 +1,20 @@
 import pygame
 from constants import *
 from abstract_car import AbstractCar
+from math import *
 
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
     # don't go closer than keep_dist between end of my car and start of other
 
-    def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
-        super().__init__(highway, lane, lane_pos, speed)
-        # pygame.sprite.Sprite.__init__(self,
-        #                       self.groups) 
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1):
 
-        self.image_car = pygame.image.load(AbstractCar.data + "/other_car.png").convert()
-        self.original_image = self.image_car
+        self.original_file_name = AbstractCar.data + "/other_car"
+        self.file_name = self.original_file_name
+        self.file_ext = ".png"
+
+        super().__init__(highway, simulator, lane, lane_pos, speed)
 
         self.keep_distance = self.WIDTH/2
         self.preferred_lane = self.lane # prefer original starting lane
@@ -41,20 +42,24 @@ class OtherCar(AbstractCar):
 
 class AgentCar(AbstractCar):
 
+
+
     # speed change step size
     speed_step_size = 0.1
 
     def init_start_state(self):
         self.trajectory.append(self.get_feature())
 
-    def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1):
         AbstractCar.reset_counter();
 
-        super().__init__(highway, lane, lane_pos, speed)
-        file = AbstractCar.data + "/agent_car.png"
-        self.image_car = pygame.image.load(file).convert_alpha()
-        self.original_image = self.image_car
         self.trajectory = []
+
+        self.original_file_name = AbstractCar.data + "/agent_car"
+        self.file_name = self.original_file_name
+        self.file_ext = ".png"
+
+        super().__init__(highway, simulator, lane, lane_pos, speed)
         
 
     # returns whether game is DONE
@@ -115,14 +120,11 @@ class AgentCar(AbstractCar):
 
             print("Action %d: %s" % ((i/2), action_to_string[trajectory[i + 1]]))
 
-    def update_angle(self, angle):      self.angle = angle
-    def update_acceleration(self, val): self.acceleration = val
-    def update_brake(self, val):        self.brake = val
-
     def print_simulator_settings(self):
-        res =  "Agent Car: Speed %2.2f: \n" % self.speed
-        res += "Angle: %2.3d degrees. \n"   % self.angle        
-        res += "Acceleration: %2.3f (0-1 scale). \n" % self.acceleration
-        res += "Brake: %2.3f (0-1 scale). \n" % self.brake
-
+        res =  "Agent Car \n"
+        res += "Lane %2.2f. Lane Pos %2.2f: \n" % (self.lane, self.lane_pos)
+        res += "Speed %2.2f: \n" % self.speed
+        res += "Heading: %2.2d deg. \n"   % degrees(self.heading)       
+        res += "Acceleration: %2.2f (0-5 scale). \n" % self.simulator.u1
+        res += "Steering Angle: %2.2f deg. \n" % degrees(self.simulator.u2)
         return res

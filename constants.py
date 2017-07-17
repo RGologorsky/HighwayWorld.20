@@ -36,7 +36,12 @@ AXIS_NAMES = ["STEERING_WHEEL_AXIS", "ACCELERATOR_PEDAL_AXIS", \
               "BRAKE_PEDAL_AXIS", "CLUTCH_PEDAL_AXIS"]
 
 # joystick buttons
-A = 0
-B = 1
-X = 2
-Y = 3
+# A = 0
+# B = 1
+# X = 2
+# Y = 3
+
+RIGHT_BLINKER = 1
+LEFT_BLINKER  = 2
+
+P = 6

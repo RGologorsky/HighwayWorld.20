@@ -1,14 +1,15 @@
 import itertools
-import numpy as np
+from   math import pi
+from random import randint
 
 from constants import *
-from helpers import *
+from   helpers import *
 
-from random import randint
-from math   import cos, sin, radians
 from abstract_car_mixin import AbstractCarMixin
+from abc import ABCMeta
 
-from abc import ABCMeta, abstractmethod
+# kinematic bicycle model, center of gravity at center of car
+from dynamics_model import *
 
 class AbstractCar(AbstractCarMixin, object):
 
@@ -23,123 +24,93 @@ class AbstractCar(AbstractCarMixin, object):
     def reset_counter():
         AbstractCar.counter = itertools.count(1)
 
-    def lane_center_to_pixel_pos(self, lane, lane_pos):
-        x = (lane + 0.5) * self.highway.lane_width
-        y = self.highway.highway_len - lane_pos
-        return (x, y)
-
-    # start cars in the middle of their lane
-    def init_pixel_pos(self):
-        self.x, self.y = self.lane_center_to_pixel_pos(self.lane, self.lane_pos)
-
-    # set speed sampled from a Normal distribution
-    def init_normal_speed(self):
-        sigma = 1;
-
-        if   self.lane == 0:                          mu = 5
-        elif self.lane == self.highway.num_lanes - 1: mu = 4
-        else:                                         mu = 3
-
-        self.speed = np.random.normal(mu, sigma, 1)[0]
-
-        while (self.speed <= 0.5):
-            self.speed = np.random.normal(mu, sigma, 1)[0]
-        print("Set speed to %1.1f" % self.speed)
-    
-    # set initial speed
-    def init_speed(self, speed, normal=True):
-        if speed != -1: self.speed = speed
-        elif normal:    self.init_normal_speed()
-        else:           self.rand_speed()
-
-    # set initial lane and lane position
-    def init_place(self, lane, lane_pos):
-        lane     = lane     if     lane != -1 else self.rand_lane()
-        lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
-
-        x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
-
-        while (self.is_collision(x, y, self.angle)):
-            lane     = self.rand_lane()
-            lane_pos = self.rand_lane_pos()
-            x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
-
-        self.lane     = lane
-        self.lane_pos = lane_pos
-    
-    # update functions
-
-    # update pos returns whether updated position caused collision
-    def update_pos(self, allow_collision = False):
-        angle = radians(self.angle)
-
+   
+    def __init__(self, highway, simulator=None, lane=-1, lane_pos=-1, speed=-1):
+        self.id           = next(self.counter)
         
-        new_x = self.x + self.speed * sin(angle)
-        new_y = self.y - self.speed * cos(angle)
+        self.highway      = highway
+        self.simulator    = simulator
+
+        self.heading    = pi/2 # 90 degrees from x-axis
+
+        # init (x, y, lane, lane_pos) with given inputs or random. 
+        self.init_place(lane, lane_pos)
+        self.init_pixel_pos()
+
+        # init speed with given speed, random, or normal
+        # normal: speed ~ normal disribution w/mean governed by lane
+        self.init_speed(speed, normal=True)
+
+        # Center of mass = middle.
+        self.l_r = self.HEIGHT/2.0
+        self.l_f = self.HEIGHT/2.0
+
+        # blinkers
+        self.right_blinker = False
+        self.left_blinker  = False
+
+        # file images
+        file = self.file_name + self.file_ext
+        self.image_car = pygame.image.load(file).convert_alpha()
+        self.straight_image_car = self.image_car
+
+        # update highway
+        self.highway.add_car(self)
+
+
+    def move(self, allow_collision = False):
+
+        # convert y to increasing bottom-up
+        # print("heading", self.heading)
+        # print("heading (deg)", degrees(self.heading))
+        y = self.convert_y(self.y)
+
+        (new_x, new_y, new_speed, new_heading) = \
+            next_step(self.x, y, self.speed, self.heading, \
+                self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
+
+        # convert y back
+        new_y = self.convert_y(new_y)
 
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
-        if self.is_legal_lane(new_lane): 
-            yes_collision = self.is_collision(new_x, new_y, self.angle)
-            
-            if allow_collision or not yes_collision:
-                self.x, self.y           = new_x, new_y
-                self.lane, self.lane_pos = new_lane, new_lane_pos
+        # fixed
+        # new_x, new_y = 500, 200
+        # FIXED PLACE
+        
+        
+        is_collision = self.is_collision(new_x, new_y, new_heading)
+        
+        if allow_collision or not is_collision:
+            self.x, self.y           = new_x, new_y
+            self.lane, self.lane_pos = new_lane, new_lane_pos
+            self.speed               = new_speed
+            self.heading             = new_heading
+        
+        # CHECK IF LEGAL SPEED, LANE, POSIION            
+        
+        # check is legal speed, lane, posiion
+        # if self.is_legal_speed(new_speed): 
+        #     self.speed = new_speed
 
-                return yes_collision
-        return False
-
-    def update_speed(self):
-        friction = 0.2
-
-        new_speed = self.speed
-
-        if self.acceleration != 0:
-            new_speed += 2* self.acceleration - friction*self.speed
-
-        if self.brake != 0:
-            new_speed -= 3* self.brake - friction*self.speed
-
-        if self.is_legal_speed(new_speed): 
-            self.speed = new_speed
-
-   
-    def __init__(self, highway, lane=-1, lane_pos=-1, speed=-1):
-        self.id           = next(self.counter)
-        self.highway      = highway
-        self.acceleration = 0
-        self.brake        = 0
-        self.angle        = 0
-
-        self.init_place(lane, lane_pos)
-        self.init_speed(speed, normal=True)
-        self.init_pixel_pos()
-
-        self.highway.add_car(self)
-
-    def move(self, allow_collision = False):
-        reached_end = self.lane_pos >= self.highway.highway_len - 1
-
-        # if reached_end:
-            # self.highway.remove_car(self)
-            # print("Removed car from our highway state")
-            
-            # return
-
+        # update image of car
         self.rotate()
-        self.update_speed()
-        collision = self.update_pos(allow_collision)
-        return collision
+
+        return is_collision
         
 
     # feature = list (id, #steps away, speed) for cars ahead/behind and 
     # left, current, right lanes. At end, agent's id, speed, lane, & lane pos.
+    # u1 = acceleration, u2 = steering angle (radians)
     def get_feature(self):
         closest_cars = self.highway.get_closest_cars(self.lane, self.lane_pos)
         closest_cars.append(self.id)
-        closest_cars.append(self.speed)
         closest_cars.append(self.lane)
         closest_cars.append(self.lane_pos)
+        closest_cars.append(self.heading)
+        closest_cars.append(self.speed)
+        closest_cars.append(self.simulator.u1)
+        closest_cars.append(self.simulator.u2)
         return closest_cars
 
 

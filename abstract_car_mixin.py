@@ -2,8 +2,9 @@
 # general useful functions, constants
 
 import pygame
+import numpy as np
 from random import randint
-from math import radians, cos, sin
+from math import pi, radians, degrees, cos, sin
 from constants import *
 from helpers import *
 
@@ -15,6 +16,52 @@ class AbstractCarMixin(object):
 
     data = "rotated_data"
 
+    # init functions
+    def lane_center_to_pixel_pos(self, lane, lane_pos):
+        x = (lane + 0.5) * self.highway.lane_width
+        y = self.highway.highway_len - lane_pos
+        return (x, y)
+
+    # start cars in the middle of their lane
+    def init_pixel_pos(self):
+        self.x, self.y = self.lane_center_to_pixel_pos(self.lane, self.lane_pos)
+
+    # set speed sampled from a Normal distribution
+    def init_normal_speed(self):
+        sigma = 1;
+
+        if   self.lane == 0:                          mu = 5
+        elif self.lane == self.highway.num_lanes - 1: mu = 4
+        else:                                         mu = 3
+
+        self.speed = np.random.normal(mu, sigma, 1)[0]
+
+        while (self.speed <= 0.5):
+            self.speed = np.random.normal(mu, sigma, 1)[0]
+        print("Set speed to %1.1f" % self.speed)
+    
+    # set initial speed
+    def init_speed(self, speed, normal=True):
+        if speed != -1: self.speed = speed
+        elif normal:    self.init_normal_speed()
+        else:           self.rand_speed()
+
+    # set initial lane and lane position
+    def init_place(self, lane, lane_pos):
+        lane     = lane     if     lane != -1 else self.rand_lane()
+        lane_pos = lane_pos if lane_pos != -1 else self.rand_lane_pos()
+
+        x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
+
+        while (self.is_collision(x, y, self.heading)):
+            lane     = self.rand_lane()
+            lane_pos = self.rand_lane_pos()
+            x, y = self.lane_center_to_pixel_pos(lane, lane_pos)
+
+        self.lane     = lane
+        self.lane_pos = lane_pos
+    
+
     def __eq__(self, other):
         return self.id == other.id
 
@@ -24,52 +71,85 @@ class AbstractCarMixin(object):
         feat = self.get_feature()
 
         feat_len    = len(feat)
-        my_id       = feat[feat_len - 4]
+        my_id       = feat[feat_len - 7]
+        my_lane     = feat[feat_len - 6]
+        my_lane_pos = feat[feat_len - 5]
+        my_heading  = feat[feat_len - 4]
         my_speed    = feat[feat_len - 3]
-        my_lane     = feat[feat_len - 2]
-        my_lane_pos = feat[feat_len - 1]
+        my_accel    = feat[feat_len - 2]
+        my_steering_angle = feat[feat_len - 1]
 
         res = ("Features of car id = %d: \n " % my_id)
-        res += ("Speed = %1.1f. Lane: %d. Lane Pos: %d. \n" % \
-            (my_speed, my_lane, my_lane_pos))
+        res += ("Lane: %d. Lane Pos: %d.\n" % (my_lane, my_lane_pos))
+        res += ("Heading: %1.1f. Speed: %1.1f. Accel: %1.1f. Steering Angle: %1.1f \n" % \
+            (degrees(my_heading),my_speed,my_accel,degrees(my_steering_angle)))
 
         lane_strs = ["LEFT", "LEFT", "CURR", "CURR", "RIGHT", "RIGHT"]
         dir_strs = ["AHEAD", "BEHIND"]
 
-        for i in range(0, feat_len - 4, 1):
+        for i in range(0, feat_len - 7, 1):
             lane_str = lane_strs[i % 6]
             dir_str = dir_strs[i % 2]
 
             res += ("%6s and %6s: (id = %3d, steps away = %3d, speed = %2.1f) \n" % \
                 (lane_str, dir_str, feat[i][0], feat[i][1], feat[i][2]))
 
-
         return res
 
     def print_feature(self, feat):
 
         feat_len    = len(feat)
-        my_id       = feat[feat_len - 4]
+        my_id       = feat[feat_len - 7]
+        my_lane     = feat[feat_len - 6]
+        my_lane_pos = feat[feat_len - 5]
+        my_heading  = feat[feat_len - 4]
         my_speed    = feat[feat_len - 3]
-        my_lane     = feat[feat_len - 2]
-        my_lane_pos = feat[feat_len - 1]
+        my_accel    = feat[feat_len - 2]
+        my_steering_angle = feat[feat_len - 1]
 
-        print("Features of car id = %d: " % my_id)
-        print("My speed = %1.1f. Lane: %d, Lane Pos: %d" % \
-            (my_speed, my_lane, my_lane_pos))
+        print("Features of car id = %d: \n " % my_id)
+        print("Lane: %d. Lane Pos: %d." % (my_lane, my_lane_pos))
+        print("Heading: %1.1f. Speed: %1.1f. Accel: %1.1f. Steering Angle: %1.1f \n" % \
+            (degrees(my_heading),my_speed,my_accel,degrees(my_steering_angle)))
+
 
         lane_strs = ["LEFT", "LEFT", "CURR", "CURR", "RIGHT", "RIGHT"]
         dir_strs = ["AHEAD", "BEHIND"]
 
-        for i in range(0, feat_len - 4, 1):
+        for i in range(0, feat_len - 7, 1):
             lane_str = lane_strs[i % 6]
             dir_str = dir_strs[i % 2]
 
-            print("%6s and %6s: (id = %3d, steps away = %3d, speed = %2.1f)" % \
+            print("%6s and %6s: (id = %3d, steps away = %3d, speed = %2.1f) \n" % \
                 (lane_str, dir_str, feat[i][0], feat[i][1], feat[i][2]))
 
 
+    # def print_feature(self, feat):
+
+    #     feat_len    = len(feat)
+    #     my_id       = feat[feat_len - 4]
+    #     my_speed    = feat[feat_len - 3]
+    #     my_lane     = feat[feat_len - 2]
+    #     my_lane_pos = feat[feat_len - 1]
+
+    #     print("Features of car id = %d: " % my_id)
+    #     print("My speed = %1.1f. Lane: %d, Lane Pos: %d" % \
+    #         (my_speed, my_lane, my_lane_pos))
+
+    #     lane_strs = ["LEFT", "LEFT", "CURR", "CURR", "RIGHT", "RIGHT"]
+    #     dir_strs = ["AHEAD", "BEHIND"]
+
+    #     for i in range(0, feat_len - 4, 1):
+    #         lane_str = lane_strs[i % 6]
+    #         dir_str = dir_strs[i % 2]
+
+    #         print("%6s and %6s: (id = %3d, steps away = %3d, speed = %2.1f)" % \
+    #             (lane_str, dir_str, feat[i][0], feat[i][1], feat[i][2]))
+
+
     # GENERAL USEFUL functions
+    def convert_y(self, y):
+        return self.highway.highway_len - y
 
     def rand_lane(self): 
         return randint(0, self.highway.num_lanes - 1)
@@ -85,7 +165,7 @@ class AbstractCarMixin(object):
 
     def pixel_to_lane_pos(self, x, y):
         lane     = int(x / self.highway.lane_width)
-        lane_pos = int(round(self.highway.highway_len - y))
+        lane_pos = int(round(self.convert_y(y)))
 
         return (lane, lane_pos)
 
@@ -105,8 +185,6 @@ class AbstractCarMixin(object):
     # go through car lis in highway (ok for small numbers of cars) 
 
     def rotate_point(self, orig_pt, center_pt, angle):
-
-        angle = radians(angle)
 
         (center_x, old_center_y) = center_pt
         (x, old_y) = orig_pt
@@ -148,7 +226,8 @@ class AbstractCarMixin(object):
 
         return (new_top_left, new_top_right, new_back_left, new_back_right)
 
-    def is_collision(self, new_x, new_y, new_angle):
+    def is_collision(self, new_x, new_y, new_heading):
+        new_angle = pi/2 - new_heading # angle is angle from y-axis
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
             self.get_corners(new_x, new_y, new_angle)
 
@@ -192,9 +271,37 @@ class AbstractCarMixin(object):
 
     # rotate car image around center
     def rotate(self):
-        self.image_car = pygame.transform.rotate(self.original_image, -1 * self.angle)
+        new_angle = -1 * (90 - degrees(self.heading)) # angle is degrees from y-axis
+        # print("new angle", new_angle)
+        self.image_car = pygame.transform.rotate(self.straight_image_car,new_angle)
         rect = self.image_car.get_rect()
         rect.center = (self.x, self.y)  
+
+    # edge case, two blinkers
+    def toggle_image(self):
+        self.file_name = self.original_file_name
+        
+        if self.right_blinker:
+            self.file_name = self.original_file_name + "_right"
+        
+        if self.left_blinker:
+            self.file_name = self.original_file_name + "_left"
+        
+        if self.right_blinker and self.left_blinker:
+            self.file_name = self.original_file_name + "_both"
+        
+        file = self.file_name + self.file_ext
+        self.image_car = pygame.image.load(file).convert_alpha()
+        self.straight_image_car = self.image_car
+   
+    def toggle_blinker(self, blinker):
+        if blinker == RIGHT_BLINKER:
+            self.right_blinker = not self.right_blinker
+        
+        if blinker == LEFT_BLINKER:
+            self.left_blinker = not self.left_blinker
+
+        self.toggle_image()
 
     # DRAWING function
 
