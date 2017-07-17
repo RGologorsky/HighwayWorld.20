@@ -66,7 +66,7 @@ class AbstractCar(AbstractCarMixin, object):
         y = self.convert_y(self.y)
 
         (new_x, new_y, new_speed, new_heading) = \
-            next_step(self.x, y, self.speed, self.heading, \
+            next_step_simple(self.x, y, self.speed, self.heading, \
                 self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
 
         # convert y back

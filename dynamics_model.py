@@ -31,3 +31,12 @@ def next_step(x, y, v, psi, u1, u2, l_r, l_f):
     # new_psi =  psi_sign * (abs(new_psi) % (2*pi))
 
     return (new_x, new_y, new_v, new_psi)
+
+def next_step_simple(x, y, v, psi, u1, u2, l_r, l_f):
+     angle = pi/2 - u2
+
+     new_x = x + self.speed * sin(angle)
+     new_y = y - self.speed * cos(angle)
+     new_v = v + u1
+
+     return (new_x, new_y, new_v, new_psi)
