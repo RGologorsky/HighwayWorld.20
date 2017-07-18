@@ -261,17 +261,18 @@ class AbstractCarMixin(object):
             
 
     def is_point_in_lane(self, pt, lane):
-        pt_lane, pt_lane_pos = self.pixel_to_lane_pos(pt)
+        (x, y) = pt
+        pt_lane, pt_lane_pos = self.pixel_to_lane_pos(x, y)
         return (pt_lane == lane) 
 
     def is_within_lane(self):
         (top_left, top_right, back_left, back_right) = \
             self.get_corners(self.x, self.y, self.heading)
 
-        return (is_point_in_lane(top_left, self.lane) and \
-                is_point_in_lane(top_right, self.lane) and \
-                is_point_in_lane(back_left, self.lane) and \
-                is_point_in_lane(back_right, self.lane))
+        return (self.is_point_in_lane(top_left, self.lane) and \
+                self.is_point_in_lane(top_right, self.lane) and \
+                self.is_point_in_lane(back_left, self.lane) and \
+                self.is_point_in_lane(back_right, self.lane))
 
     def dist_to_road_boundary(self):
         return in_range(self.x, 0, self.highway.highway_len) and \

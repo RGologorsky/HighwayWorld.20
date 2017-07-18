@@ -128,6 +128,7 @@ class AbstractCar(AbstractCarMixin, object):
         closest_cars.append(self.simulator.u1)
         closest_cars.append(self.simulator.u2)
         # closest_cars.append(self.is_within_lane())
+        # print("within lane? id = %d. Within lane = %r" % (self.id, self.is_within_lane()))
         return closest_cars
 
 
