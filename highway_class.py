@@ -23,7 +23,7 @@ class Highway(HighwayMixin, IRLworld):
     def add_reference_pt(self, tree):
         self.reference_pts.append(tree)
     
-    def __init__(self,num_lanes=3, highway_len = 700, 
+    def __init__(self, num_lanes=3, highway_len = 700, 
                     max_num_cars=10, discount = 0.8):
 
         self.num_lanes = num_lanes
@@ -32,6 +32,17 @@ class Highway(HighwayMixin, IRLworld):
         self.HEIGHT = self.highway_len
         self.WIDTH = self.num_lanes * self.lane_width
 
+    def get_highway_param(self):
+        return (self.num_lanes, self.highway_len, self.lane_width)
+    
+    def get_highway_state(self):
+        highway_state = []
+        highway_state.append(self.highway_param())
+
+        for car in highway.car_list:
+            car_state = car.get_state() # 11-tuple
+            highway_state.append(car_state)
+        highway_time_series.append(highway_state)
     # returns (id, #steps away, speed) of closest car in specified lane & dir
     def get_closest_car(self, lane, lane_pos, dir):
         # if no such lane

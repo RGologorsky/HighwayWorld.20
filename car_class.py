@@ -16,36 +16,27 @@ class OtherCar(AbstractCar):
 
         super().__init__(highway, simulator, lane, lane_pos, speed)
 
-        self.keep_distance = self.WIDTH/2
+        self.keep_distance = self.HEIGHT/2
         self.preferred_lane = self.lane # prefer original starting lane
         self.preferred_speed = self.speed # prefer original speed
+        
         self.passing_threshold = 2 # how much slowdown will tolerate
         self.am_passing = False
 
     # def pass_ahead_car(self, lane, lane_pos):
         # if (scar_ahead_speed )
     # checks if we are keeping our distance; adjusts speed if needed
-    def check_distance(self, lane, lane_pos):
-        for car in self.highway.car_list:
-            if car.lane == lane:
-                ahead_pos = lane_pos + self.HEIGHT + self.keep_distance
-                if not ahead_pos <= car.lane_pos:
-                    self.speed = car.speed # set speed to car ahead of us
-            
+   
 
     # returns DONE = False since other cars don't collide with one another
     def move(self):
         # if necessary, set speed to ahead car speed to maintain distance 
-        self.check_distance(self.lane, self.lane_pos)        
-        super().move(allow_collision = False)
+        # self.check_distance(self.lane, self.lane_pos)        
+        super().move(allow_collision = False, check_distance = True)
         return False
 
 class AgentCar(AbstractCar):
 
-
-
-    # speed change step size
-    speed_step_size = 0.1
 
     def init_start_state(self):
         self.trajectory.append(self.get_feature())

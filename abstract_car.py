@@ -17,7 +17,7 @@ class AbstractCar(AbstractCarMixin, object):
 
     counter = itertools.count(1)
     
-    min_speed = 0.1
+    min_speed = 0
     max_speed = 10
     
     # init functions
@@ -42,8 +42,8 @@ class AbstractCar(AbstractCarMixin, object):
         self.init_speed(speed, normal=True)
 
         # Center of mass = middle.
-        self.l_r = self.HEIGHT * 3.0/4.0
-        self.l_f = self.HEIGHT * 1/4.0
+        self.l_r = self.HEIGHT * 1/4.0
+        self.l_f = self.HEIGHT * 3/4.0
 
         # blinkers
         self.right_blinker = False
@@ -57,12 +57,25 @@ class AbstractCar(AbstractCarMixin, object):
         # update highway
         self.highway.add_car(self)
 
+     # if necessary, set speed to ahead car speed to maintain distance 
+    def check_distance(self):
+        ahead_pos = self.lane_pos + self.HEIGHT + self.keep_distance
+        
+        car_in_front = False
+        for car in self.highway.car_list:
+            if (car.lane == self.lane and \
+                in_range(car.lane_pos, self.lane_pos, ahead_pos)):
+                car_in_front = True
+                self.speed = min(self.speed, car.speed) 
 
-    def move(self, allow_collision = False):
+        # if no car in front, maintain preferred speed
+        if not car_in_front:
+            self.speed = self.preferred_speed
+
+            
+    def move(self, allow_collision = False, check_distance = False):
 
         # convert y to increasing bottom-up
-        # print("heading", self.heading)
-        # print("heading (deg)", degrees(self.heading))
         y = self.convert_y(self.y)
 
         (new_x, new_y, new_speed, new_heading) = \
@@ -84,8 +97,12 @@ class AbstractCar(AbstractCarMixin, object):
 
             if self.is_legal_speed(new_speed):
                 self.speed = new_speed
+
+            if check_distance:
+                self.check_distance()
+
             
-             # CHECK IF LEGAL SPEED, LANE, POSIION            
+            # CHECK IF LEGAL SPEED, LANE, POSIION            
             if self.is_legal_pos(new_x, new_y, new_heading):
                 self.x, self.y           = new_x, new_y
                 self.lane, self.lane_pos = new_lane, new_lane_pos
@@ -110,6 +127,7 @@ class AbstractCar(AbstractCarMixin, object):
         closest_cars.append(self.speed)
         closest_cars.append(self.simulator.u1)
         closest_cars.append(self.simulator.u2)
+        # closest_cars.append(self.is_within_lane())
         return closest_cars
 
 

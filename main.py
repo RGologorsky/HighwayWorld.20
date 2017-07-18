@@ -37,7 +37,7 @@ def start():
     highway.car_list = []
 
     # tree (reference point)
-    tree = Tree(highway)
+    tree = Tree(highway.get_highway_param())
     highway.add_reference_pt(tree)
 
     agent_simulator = Simulator(accel_max = accel_max, degree_max = 540)

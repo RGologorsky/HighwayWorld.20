@@ -260,7 +260,18 @@ class AbstractCarMixin(object):
         return within_highway
             
 
+    def is_point_in_lane(self, pt, lane):
+        pt_lane, pt_lane_pos = self.pixel_to_lane_pos(pt)
+        return (pt_lane == lane) 
 
+    def is_within_lane(self):
+        (top_left, top_right, back_left, back_right) = \
+            self.get_corners(self.x, self.y, self.heading)
+
+        return (is_point_in_lane(top_left, self.lane) and \
+                is_point_in_lane(top_right, self.lane) and \
+                is_point_in_lane(back_left, self.lane) and \
+                is_point_in_lane(back_right, self.lane))
 
     def dist_to_road_boundary(self):
         return in_range(self.x, 0, self.highway.highway_len) and \
@@ -297,8 +308,9 @@ class AbstractCarMixin(object):
             self.file_name = self.original_file_name + "_both"
         
         file = self.file_name + self.file_ext
-        self.image_car = pygame.image.load(file).convert_alpha()
-        self.straight_image_car = self.image_car
+        self.straight_image_car = pygame.image.load(file).convert_alpha()
+        self.image_car = self.straight_image_car
+        self.rotate()
    
     def toggle_blinker(self, blinker):
         if blinker == RIGHT_BLINKER:

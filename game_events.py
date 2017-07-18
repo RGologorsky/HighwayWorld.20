@@ -9,6 +9,10 @@ pygame.time.set_timer(CAR_MOVE_EVENT, t)
 RECORD_HIGHWAY_EVENT, s = pygame.USEREVENT+2, 500
 pygame.time.set_timer(RECORD_HIGHWAY_EVENT, t)
 
+# update acceleration
+UPDATE_SIMULATOR, u = pygame.USEREVENT+2, 150
+pygame.time.set_timer(UPDATE_SIMULATOR, u)
+
 highway_time_series = []
 
 def record_highway(highway):
@@ -31,7 +35,7 @@ def is_quit(event):
         ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE))
 
 def is_restart(event, PAUSE):
-    return PAUSE and event.type == pygame.JOYBUTTONDOWN and event.button == P
+    return event.type == pygame.JOYBUTTONDOWN and event.button == R
 
 def is_pause(event):
     return ((event.type == pygame.KEYDOWN and event.key == pygame.K_p) or \
@@ -78,7 +82,7 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     # if event.type == pygame.KEYDOWN:
         
 
-    return (DONE, PAUSE, RESTART, None)
+    return (DONE, PAUSE, RESTART, highway_time_series)
 
 # if event.key == pygame.K_LEFT: agent_car.change_lane(LEFT)
 # if event.key == pygame.K_RIGHT: agent_car.change_lane(RIGHT)

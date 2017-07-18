@@ -62,16 +62,13 @@ class Simulator:
 
   def val_to_u2(self, val):  
     vertical_degree = self.val_to_degrees(val)
-    # horizontal_degree = 90 - vertical_degree
     u2 = radians(vertical_degree) 
-    
     return u2
 
   # convert accel from percentage to value between 0 and 5 (accel max)
   def val_to_accel(self, val):
     percentage = self.val_to_percent(val)
     accel = self.accel_max * percentage
-    print("accel", accel)
     return accel
 
 
@@ -88,8 +85,6 @@ class Simulator:
 
     new_u1 = self.val_to_accel(val)
     new_u2 = self.val_to_u2(val)
-
-    print("new accel", new_u1)
 
     if axis == STEERING_WHEEL_AXIS:      self.u2 = new_u2
     elif axis == ACCELERATOR_PEDAL_AXIS: self.u1 = new_u1
