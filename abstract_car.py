@@ -126,6 +126,16 @@ class AbstractCar(AbstractCarMixin, object):
         amt_back = self.speed
         self.highway.set_all_back(amt_back)
 
+    # all info about car state as 11-tuple
+    def get_state(self):
+        return (self.id, \
+                self.heading, 
+                self.lane, self.lane_pos, self.x, self.y, \
+                self.speed, self.simulator.u1, self.simulator.u2,
+                self.right_blinker, self.left_blinker)
+        
+
+
     # Keyboard input or regulated speed change to car in front
     def change_lane(self, dir):
         new_lane = self.lane + dir

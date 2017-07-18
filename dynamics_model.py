@@ -7,10 +7,10 @@ def slip_angle(u2, l_r, l_f):
 # kinematic bicycle model, center of mass at center of car
 def next_step(x, y, v, psi, u1, u2, l_r, l_f):
 
-    print("input")
-    print("x, y, v, psi, u1, u2")
-    print(x, y, v, psi, u1, u2)
-    print("l_r, l_f", l_r, l_f)
+    # print("input")
+    # print("x, y, v, psi, u1, u2")
+    # print(x, y, v, psi, u1, u2)
+    # print("l_r, l_f", l_r, l_f)
 
     alpha = 0.2
 

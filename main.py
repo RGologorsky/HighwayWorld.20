@@ -12,6 +12,8 @@ from game_events     import check_event
 
 from helpers import *
 
+import csv
+
 # general tweakable parameters
 num_lanes = 4
 highway_len = 700
@@ -54,6 +56,12 @@ def start():
     print("Start")
     return (highway, agent_car, agent_simulator, draw_list)
 
+def write_recorded_data(highway_time_series_data):
+    with open("recorded_data.csv", "w", newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        for line in highway_time_series_data:
+            writer.writerow(line)
+
 def main():
     DONE, PAUSE, RESTART = False, False, False
     
@@ -63,10 +71,13 @@ def main():
 
     while not (DONE or RESTART):
         for event in pygame.event.get():
-            DONE,PAUSE,RESTART = check_event(event,highway,agent_car,simulator,\
-                                    DONE, PAUSE, RESTART);
+            DONE,PAUSE,RESTART,highway_time_series_data = \
+                check_event(event,highway,agent_car,simulator,\
+                            DONE, PAUSE, RESTART);
         redraw_all(screen, draw_list)
     print("Simulation Over")
+
+    write_recorded_data(highway_time_series_data)
 
     if RESTART:
         main();            # restart the game

@@ -27,7 +27,6 @@ class HighwayMixin(object):
     def print_state(self):
         return print(str(self))
 
-
     # DRAWING FUNCTIONS
 
     def draw_lane(self, screen, x, y):

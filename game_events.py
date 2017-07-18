@@ -5,6 +5,20 @@ from constants import *
 CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 50
 pygame.time.set_timer(CAR_MOVE_EVENT, t)
 
+# record highway every 0.5 seconds. 2 min traj => 240 len vector
+RECORD_HIGHWAY_EVENT, s = pygame.USEREVENT+2, 500
+pygame.time.set_timer(RECORD_HIGHWAY_EVENT, t)
+
+highway_time_series = []
+
+def record_highway(highway):
+    highway_state = []
+    highway_state.append(highway.num_lanes)
+    for car in highway.car_list:
+        car_state = car.get_state() # 11-tuple
+        highway_state.append(car_state)
+    highway_time_series.append(highway_state)
+
 def move_cars(car_list, agent_car):
     for car in car_list:
         if car != agent_car:
@@ -33,19 +47,20 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     
     # If user clicked close or quits
     if is_quit(event): 
-        DONE = True 
+        DONE = True
+        return (DONE, PAUSE, RESTART, highway_time_series) 
 
     # check if resart
     if is_restart(event, PAUSE):
         RESTART = True
-        return (DONE, PAUSE, RESTART)
+        return (DONE, PAUSE, RESTART, highway_time_series)
     
     # toggle pause
     if is_pause(event):
         PAUSE = not PAUSE
 
     if PAUSE:
-        return (DONE, PAUSE, RESTART)
+        return (DONE, PAUSE, RESTART, None)
 
     if (event.type == CAR_MOVE_EVENT): 
         DONE = move_cars(highway.car_list, agent_car)
@@ -56,11 +71,14 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     if is_blinker(event):
         agent_car.toggle_blinker(event.button)
 
+    if (event.type == RECORD_HIGHWAY_EVENT):
+        record_highway(highway)
+
     # User pressed down on a key
     # if event.type == pygame.KEYDOWN:
         
 
-    return (DONE, PAUSE, RESTART)
+    return (DONE, PAUSE, RESTART, None)
 
 # if event.key == pygame.K_LEFT: agent_car.change_lane(LEFT)
 # if event.key == pygame.K_RIGHT: agent_car.change_lane(RIGHT)

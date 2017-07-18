@@ -124,29 +124,6 @@ class AbstractCarMixin(object):
                 (lane_str, dir_str, feat[i][0], feat[i][1], feat[i][2]))
 
 
-    # def print_feature(self, feat):
-
-    #     feat_len    = len(feat)
-    #     my_id       = feat[feat_len - 4]
-    #     my_speed    = feat[feat_len - 3]
-    #     my_lane     = feat[feat_len - 2]
-    #     my_lane_pos = feat[feat_len - 1]
-
-    #     print("Features of car id = %d: " % my_id)
-    #     print("My speed = %1.1f. Lane: %d, Lane Pos: %d" % \
-    #         (my_speed, my_lane, my_lane_pos))
-
-    #     lane_strs = ["LEFT", "LEFT", "CURR", "CURR", "RIGHT", "RIGHT"]
-    #     dir_strs = ["AHEAD", "BEHIND"]
-
-    #     for i in range(0, feat_len - 4, 1):
-    #         lane_str = lane_strs[i % 6]
-    #         dir_str = dir_strs[i % 2]
-
-    #         print("%6s and %6s: (id = %3d, steps away = %3d, speed = %2.1f)" % \
-    #             (lane_str, dir_str, feat[i][0], feat[i][1], feat[i][2]))
-
-
     # GENERAL USEFUL functions
     def convert_y(self, y):
         return self.highway.highway_len - y
@@ -271,15 +248,15 @@ class AbstractCarMixin(object):
                     highway_rect.collidepoint(new_back_left) and \
                     highway_rect.collidepoint(new_back_right)
 
-        if not within_highway:
-            new_x, new_y = new_back_left
-            lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
-            print("lane %d, lane pos %d" % (lane, lane_pos))
-            print("not within highway: ", self.id)
-            print(highway_rect.collidepoint(new_top_left))
-            print(highway_rect.collidepoint(new_top_right))
-            print(highway_rect.collidepoint(new_back_left))
-            print(highway_rect.collidepoint(new_back_right))
+        # if not within_highway:
+        #     new_x, new_y = new_back_left
+        #     lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
+        #     # print("lane %d, lane pos %d" % (lane, lane_pos))
+        #     # print("not within highway: ", self.id)
+        #     print(highway_rect.collidepoint(new_top_left))
+        #     print(highway_rect.collidepoint(new_top_right))
+        #     print(highway_rect.collidepoint(new_back_left))
+        #     print(highway_rect.collidepoint(new_back_right))
         return within_highway
             
 
