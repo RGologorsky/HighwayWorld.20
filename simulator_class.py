@@ -93,7 +93,7 @@ class Simulator:
 
     if axis == STEERING_WHEEL_AXIS:      self.u2 = new_u2
     elif axis == ACCELERATOR_PEDAL_AXIS: self.u1 = new_u1
-    elif axis == BRAKE_PEDAL_AXIS:       self.u2 = -1 * new_u1
+    elif axis == BRAKE_PEDAL_AXIS:       self.u1 = -1 * new_u1
     
     else:
       print("Axis %d not configured" % axis)

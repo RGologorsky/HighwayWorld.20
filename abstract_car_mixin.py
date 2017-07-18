@@ -11,8 +11,8 @@ from helpers import *
 
 class AbstractCarMixin(object):
     
-    WIDTH = 48 #228
-    HEIGHT = 104 #128
+    WIDTH = 44 #228
+    HEIGHT = 100 #128
 
     data = "rot_trans"
 
@@ -30,9 +30,9 @@ class AbstractCarMixin(object):
     def init_normal_speed(self):
         sigma = 1;
 
-        if   self.lane == 0:                          mu = 5
-        elif self.lane == self.highway.num_lanes - 1: mu = 4
-        else:                                         mu = 3
+        if   self.lane == 0:                          mu = 8
+        elif self.lane == self.highway.num_lanes - 1: mu = 6
+        else:                                         mu = 5
 
         self.speed = np.random.normal(mu, sigma, 1)[0]
 
@@ -211,7 +211,9 @@ class AbstractCarMixin(object):
         return (new_x, new_y)
 
 
-    def get_corners(self, x, y, angle):
+    def get_corners(self, x, y, heading):
+        angle = heading - pi/2
+
         top_left  = (x - self.WIDTH/2, y - self.HEIGHT/2)
         top_right = (x + self.WIDTH/2, y - self.HEIGHT/2)
 
@@ -227,9 +229,8 @@ class AbstractCarMixin(object):
         return (new_top_left, new_top_right, new_back_left, new_back_right)
 
     def is_collision(self, new_x, new_y, new_heading):
-        new_angle = pi/2 - new_heading # angle is angle from y-axis
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
-            self.get_corners(new_x, new_y, new_angle)
+            self.get_corners(new_x, new_y, new_heading)
 
         # see if corners collide with any other car on the road
         for car in self.highway.car_list:
@@ -255,10 +256,9 @@ class AbstractCarMixin(object):
         return False
 
 
-    def legal_pos(self, new_x, new_y, new_heading):
-        new_angle = pi/2 - new_heading # angle is angle from y-axis
+    def is_legal_pos(self, new_x, new_y, new_heading):
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
-            self.get_corners(new_x, new_y, new_angle)
+            self.get_corners(new_x, new_y, new_heading)
 
         # see if corners collide with highway
         
@@ -271,6 +271,15 @@ class AbstractCarMixin(object):
                     highway_rect.collidepoint(new_back_left) and \
                     highway_rect.collidepoint(new_back_right)
 
+        if not within_highway:
+            new_x, new_y = new_back_left
+            lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
+            print("lane %d, lane pos %d" % (lane, lane_pos))
+            print("not within highway: ", self.id)
+            print(highway_rect.collidepoint(new_top_left))
+            print(highway_rect.collidepoint(new_top_right))
+            print(highway_rect.collidepoint(new_back_left))
+            print(highway_rect.collidepoint(new_back_right))
         return within_highway
             
 
@@ -325,14 +334,32 @@ class AbstractCarMixin(object):
 
     # DRAWING function
 
+    def int_coord(self, coord):
+        x, y = coord
+        return (int(x), int(y))
+
     def draw(self, screen):
         (center_x, center_y) = self.get_pixel_pos()
-        upper_left_pos = center_to_upper_left(self, center_x, center_y)
-        
-        screen.blit(self.image_car, upper_left_pos)
-        # draw center of car
-        # pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 10, 0)
+        # upper_left_pos = center_to_upper_left(self, center_x, center_y)
 
+        image_rect = self.image_car.get_rect()
+        image_rect.centerx = center_x
+        image_rect.centery = center_y
+
+        screen.blit(self.image_car, image_rect)        
+        # screen.blit(self.image_car, upper_left_pos)
+        
+        # draw center of car
+        pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 5, 0)
+
+        # draw corners of car
+        (new_top_left, new_top_right, new_back_left, new_back_right) = \
+            self.get_corners(self.x, self.y, self.heading)
+
+        pygame.draw.circle(screen, BLACK, self.int_coord(new_top_left), 5, 0)
+        pygame.draw.circle(screen, BLACK, self.int_coord(new_top_right), 5, 0)
+        pygame.draw.circle(screen, BLACK, self.int_coord(new_back_left), 5, 0)
+        pygame.draw.circle(screen, BLACK, self.int_coord(new_back_right), 5, 0)
 
 
 

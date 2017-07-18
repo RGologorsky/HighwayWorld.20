@@ -13,10 +13,11 @@ from game_events     import check_event
 from helpers import *
 
 # general tweakable parameters
-num_lanes = 3
+num_lanes = 4
 highway_len = 700
-num_other_cars = 4
+num_other_cars = 6
 
+accel_max = 0.5
 
 def init_screen():
     pygame.init()
@@ -37,12 +38,12 @@ def start():
     tree = Tree(highway)
     highway.add_reference_pt(tree)
 
-    agent_simulator = Simulator(accel_max = 3, degree_max = 540)
+    agent_simulator = Simulator(accel_max = accel_max, degree_max = 540)
     mid_lane_pos = int(highway_len/2)
     agent_car = AgentCar(highway, agent_simulator, lane=1, lane_pos = mid_lane_pos)
 
     # set up other car(s)
-    other_car_simulator = Simulator(accel_max = 3, degree_max = 540)
+    other_car_simulator = Simulator(accel_max = accel_max, degree_max = 540)
     for _ in range(num_other_cars):
         other_car = OtherCar(highway, other_car_simulator)
     agent_car.init_start_state()

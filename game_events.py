@@ -2,7 +2,7 @@
 import pygame
 from constants import *
 
-CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 150
+CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 50
 pygame.time.set_timer(CAR_MOVE_EVENT, t)
 
 def move_cars(car_list, agent_car):

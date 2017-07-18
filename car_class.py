@@ -81,7 +81,8 @@ class AgentCar(AbstractCar):
         if game_ended:
             if collision: print("Collision Occurred")
             if reached_end: print("Successfully Reached End of Track")
-                    
+         
+        self.highway.increment = self.highway.max_increment * self.speed/self.max_speed            
         self.set_all_cars_back()
 
         return game_ended

@@ -18,7 +18,7 @@ class AbstractCar(AbstractCarMixin, object):
     counter = itertools.count(1)
     
     min_speed = 0.1
-    max_speed = 20
+    max_speed = 10
     
     # init functions
     def reset_counter():
@@ -42,8 +42,8 @@ class AbstractCar(AbstractCarMixin, object):
         self.init_speed(speed, normal=True)
 
         # Center of mass = middle.
-        self.l_r = self.HEIGHT/2.0
-        self.l_f = self.HEIGHT/2.0
+        self.l_r = self.HEIGHT * 3.0/4.0
+        self.l_f = self.HEIGHT * 1/4.0
 
         # blinkers
         self.right_blinker = False
@@ -66,7 +66,7 @@ class AbstractCar(AbstractCarMixin, object):
         y = self.convert_y(self.y)
 
         (new_x, new_y, new_speed, new_heading) = \
-            next_step_simple(self.x, y, self.speed, self.heading, \
+            next_step(self.x, y, self.speed, self.heading, \
                 self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
 
         # convert y back
@@ -80,14 +80,20 @@ class AbstractCar(AbstractCarMixin, object):
 
 
         if allow_collision or not is_collision:
-            self.speed               = new_speed
+            self.heading = new_heading
+
+            if self.is_legal_speed(new_speed):
+                self.speed = new_speed
             
              # CHECK IF LEGAL SPEED, LANE, POSIION            
-            if self.legal_pos(new_x, new_y, new_heading):
+            if self.is_legal_pos(new_x, new_y, new_heading):
                 self.x, self.y           = new_x, new_y
                 self.lane, self.lane_pos = new_lane, new_lane_pos
-                self.heading             = new_heading
-                self.rotate()
+
+            else:
+                self.y -= self.speed
+                self.lane, self.lane_pos = self.pixel_to_lane_pos(self.x, self.y)
+            self.rotate()
                 
         return is_collision
         

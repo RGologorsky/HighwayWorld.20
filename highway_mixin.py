@@ -5,13 +5,16 @@ from helpers import *
 
 class HighwayMixin(object):
 
+    odd_time = False
+
     lane_sep_color = WHITE
     lane_color     = GRAY
     
     lane_height = 76 # little more than Car.height
     lane_width = 76 # little more than Car.height
 
-    X_OFFSET = 100
+    increment = 3.5 # lane-change
+    max_increment = 7
 
     # STRING/PRINTING functions
     def __str__(self):
@@ -55,6 +58,7 @@ class HighwayMixin(object):
         render_multi_line(screen, simulator_settings, x, y)
     
     def draw(self, screen):
+        
         # start at top-left
         curr_x, y = 0, 0
         agent_car = None
@@ -65,9 +69,12 @@ class HighwayMixin(object):
             curr_x += self.lane_width
     
         # draw lane seperators
+        self.odd_time = not self.odd_time
+        start_y = y if self.odd_time else y + self.increment
+
         curr_x = 0
         for i in range(self.num_lanes):
-            self.draw_sep(screen, curr_x, y)
+            self.draw_sep(screen, curr_x, start_y)
             curr_x += self.lane_width
         self.draw_sep_line(screen, curr_x, y)
         self.draw_sep_line(screen, 0, y)
