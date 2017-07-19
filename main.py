@@ -80,9 +80,6 @@ def playback():
     num = 1
 
     highway_time_series = Playback.get_recorded_data(num)
-    
-    print("highway time series")
-    print(highway_time_series)
 
     num_time_steps = len(highway_time_series)
     curr_time_step = 0
