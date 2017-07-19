@@ -4,7 +4,7 @@ from abstract_car_mixin import AbstractCarMixin
 
 # pygame.sprite.Sprite
 class Tree(object):
-    image_file = "rotated_data" + "/small_tree_transparent.png"
+    image_file = "images" + "/small_tree_transparent.png"
     WIDTH = 75
     HEIGHT = 118
 

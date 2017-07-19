@@ -24,3 +24,19 @@ def in_range(x, a, b):
 
 def center_to_upper_left(self, x, y):
     return (x - self.WIDTH/2, y - self.HEIGHT/2)
+
+# game events helpers
+def is_quit(event):
+    return (event.type == pygame.QUIT) or \
+        ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE))
+
+def is_restart(event, PAUSE):
+    return event.type == pygame.JOYBUTTONDOWN and event.button == R
+
+def is_pause_pressed(event):
+    return ((event.type == pygame.KEYDOWN and event.key == pygame.K_p) or \
+        event.type == pygame.JOYBUTTONDOWN and event.button == P)
+
+def is_blinker(event):
+    return event.type == pygame.JOYBUTTONDOWN and \
+        (event.button == LEFT_BLINKER or event.button == RIGHT_BLINKER)

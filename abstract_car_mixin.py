@@ -14,7 +14,7 @@ class AbstractCarMixin(object):
     WIDTH = 44 #228
     HEIGHT = 100 #128
 
-    data = "rot_trans"
+    data = "images"
 
     # init functions
     def lane_center_to_pixel_pos(self, lane, lane_pos):

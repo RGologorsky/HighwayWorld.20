@@ -1,11 +1,13 @@
 import pygame
 import traceback
-
+from collections import namedtuple
 from constants import *
 from helpers import *
 from IRL.irlworld  import *
 from highway_mixin import HighwayMixin
 
+# not efficient 
+from copy import deepcopy
 """
 Implements the Highway World 2.0 environment
 
@@ -32,6 +34,45 @@ class Highway(HighwayMixin, IRLworld):
         self.HEIGHT = self.highway_len
         self.WIDTH = self.num_lanes * self.lane_width
 
+
+    def get_car_state_record_list(self):
+        car_state_records = []
+        for car in self.car_list:
+            car_state = car.get_car_state_record()
+            car_state_records.append(car_state)
+        return car_state_records
+
+    def get_highway_state_record(self):
+        d = dict()
+
+        d['num_lanes'] = self.num_lanes
+        d['highway_len'] = self.highway_len
+        d['HEIGHT'] = self.HEIGHT
+        d['WIDTH'] = self.WIDTH
+
+        d['car_list'] = self.get_car_state_record_list()
+        d['odd_time'] = False
+
+        # adding in from highway mixin
+        d['lane_sep_color'] = self.lane_sep_color
+        d['lane_color']     = self.lane_color
+        
+        d['lane_height'] = self.lane_height
+        d['lane_width'] = self.lane_width
+
+        d['increment'] = self.increment
+        d['max_increment'] = self.max_increment
+
+        # print("#######")
+        # print(d)
+        # print("#######")
+
+
+        # MyNamedTuple = namedtuple('MyNamedTuple', sorted(d.keys()))
+        # state_tuple = MyNamedTuple(**d)
+        
+        return d
+
     def get_highway_param(self):
         return (self.num_lanes, self.highway_len, self.lane_width)
     
@@ -43,6 +84,7 @@ class Highway(HighwayMixin, IRLworld):
             car_state = car.get_state() # 11-tuple
             highway_state.append(car_state)
         highway_time_series.append(highway_state)
+    
     # returns (id, #steps away, speed) of closest car in specified lane & dir
     def get_closest_car(self, lane, lane_pos, dir):
         # if no such lane
@@ -105,6 +147,7 @@ class Highway(HighwayMixin, IRLworld):
             print("Car not in car list")
 
     def set_all_back(self, amt_back):
+
         for car in self.car_list:
             car.set_car_back(amt_back)
 

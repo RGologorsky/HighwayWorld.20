@@ -11,6 +11,11 @@ from abc import ABCMeta
 # kinematic bicycle model, center of gravity at center of car
 from dynamics_model import *
 
+from collections import namedtuple
+
+# not efficient 
+from copy import deepcopy
+
 class AbstractCar(AbstractCarMixin, object):
 
     __metaclass__ = ABCMeta
@@ -57,7 +62,22 @@ class AbstractCar(AbstractCarMixin, object):
         # update highway
         self.highway.add_car(self)
 
-     # if necessary, set speed to ahead car speed to maintain distance 
+    def get_car_state_record(self):
+        # d = deepcopy(self.__dict__)
+        no_keys = ["simulator", "highway", "image_car", "straight_image_car"]
+        d = {key:val for key, val in self.__dict__.items() if key not in no_keys}
+        d['image_file'] = self.file_name + self.file_ext
+        d['u1'] = self.simulator.u1
+        d['u2'] = self.simulator.u2
+
+        # print("d")
+        # print(d.keys())
+
+        # MyNamedTuple = namedtuple('MyNamedTuple', sorted(d.keys()))
+        # state_tuple = MyNamedTuple(**d)
+        return d
+        
+    # if necessary, set speed to ahead car speed to maintain distance 
     def check_distance(self):
         ahead_pos = self.lane_pos + self.HEIGHT + self.keep_distance
         

@@ -46,3 +46,15 @@ LEFT_BLINKER  = 2
 
 P = 6  # P = PAUSE
 R = 10 # R = RESART
+
+# MOVE EVENT FREQUENCY
+CAR_MOVE_EVENT, t = pygame.USEREVENT+1, 25
+pygame.time.set_timer(CAR_MOVE_EVENT, t)
+
+# record highway every 0.10 seconds. 1 min traj => 600 len vector
+RECORD_HIGHWAY_EVENT, s = pygame.USEREVENT+2, 100
+pygame.time.set_timer(RECORD_HIGHWAY_EVENT, s)
+
+# playback highway event every 0.5 seconds. 2 min traj => 240 len vector
+PLAYBACK_HIGHWAY_EVENT = RECORD_HIGHWAY_EVENT
+pygame.time.set_timer(PLAYBACK_HIGHWAY_EVENT, s)

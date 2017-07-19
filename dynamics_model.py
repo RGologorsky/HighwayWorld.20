@@ -12,9 +12,10 @@ def next_step(x, y, v, psi, u1, u2, l_r, l_f):
     # print(x, y, v, psi, u1, u2)
     # print("l_r, l_f", l_r, l_f)
 
-    alpha = 0.2
+    friction = 0.2
+    steering_ratio = 1/5.0
 
-    beta = slip_angle(u2/5.0, l_r, l_f)
+    beta = slip_angle(u2 * steering_ratio, l_r, l_f)
     delta_x = v * cos(psi + beta)
     delta_y = v * sin(psi + beta)
     delta_v = u1
@@ -24,7 +25,6 @@ def next_step(x, y, v, psi, u1, u2, l_r, l_f):
     # print("delta_x", delta_x)
     # print("delta_y", delta_y)
     # print("delta_psi (deg)", degrees(delta_psi))
-    alpha = 0.2
     new_x   = x + delta_x
     new_y   = y + delta_y
     new_v   = v + delta_v

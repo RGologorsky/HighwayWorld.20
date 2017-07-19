@@ -12,7 +12,7 @@ from game_events     import check_event
 
 from helpers import *
 
-import csv
+from playback import *
 
 # general tweakable parameters
 num_lanes = 4
@@ -56,13 +56,8 @@ def start():
     print("Start")
     return (highway, agent_car, agent_simulator, draw_list)
 
-def write_recorded_data(highway_time_series_data):
-    with open("recorded_data.csv", "w", newline='') as csv_file:
-        writer = csv.writer(csv_file, delimiter=',')
-        for line in highway_time_series_data:
-            writer.writerow(line)
-
-def main():
+# returns when DONE
+def play_game():
     DONE, PAUSE, RESTART = False, False, False
     
     screen.fill(GREEN)
@@ -71,15 +66,36 @@ def main():
 
     while not (DONE or RESTART):
         for event in pygame.event.get():
-            DONE,PAUSE,RESTART,highway_time_series_data = \
-                check_event(event,highway,agent_car,simulator,\
+            DONE,PAUSE,RESTART = check_event(event,highway,agent_car,simulator,\
                             DONE, PAUSE, RESTART);
         redraw_all(screen, draw_list)
     print("Simulation Over")
 
-    write_recorded_data(highway_time_series_data)
-
     if RESTART:
-        main();            # restart the game
+        play_game();            # restart the game
+
+    return DONE
+
+def playback():
+    num = 1
+
+    highway_time_series = Playback.get_recorded_data(num)
+    
+    print("highway time series")
+    print(highway_time_series)
+
+    num_time_steps = len(highway_time_series)
+    curr_time_step = 0
+    while curr_time_step != num_time_steps:
+        for event in pygame.event.get():
+            curr_time_step = check_playback_event(event, screen, \
+                highway_time_series, curr_time_step);
+    print("Playback Over")
+
+
+def main():
+    DONE = play_game()
+    if DONE:
+        playback()
 
 main()
