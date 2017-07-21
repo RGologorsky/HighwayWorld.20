@@ -6,8 +6,6 @@ from math import *
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
-    # don't go closer than keep_dist between end of my car and start of other
-
     def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1):
 
         self.original_file_name = AbstractCar.data + "/other_car"
@@ -23,15 +21,30 @@ class OtherCar(AbstractCar):
         self.passing_threshold = 2 # how much slowdown will tolerate
         self.am_passing = False
 
-    # def pass_ahead_car(self, lane, lane_pos):
-        # if (scar_ahead_speed )
-    # checks if we are keeping our distance; adjusts speed if needed
-   
+    # returns DONE = False since other cars don't collide with one another
+    def move(self):   
+        super().move(allow_collision = False, check_distance = True)
+        return False
+
+class MergingCar(AbstractCar):
+
+    def __init__(self, highway, agent_car, simulator, lane=-1, lane_pos=-1, speed=-1):
+
+        self.original_file_name = AbstractCar.data + "/other_car"
+        self.file_name = self.original_file_name
+        self.file_ext = ".png"
+
+        super().__init__(highway, simulator, lane, lane_pos, speed)
+
+        self.keep_distance = self.HEIGHT/2
+        self.preferred_lane = self.lane # prefer original starting lane
+        self.preferred_speed = self.speed # prefer original speed
+        
+        self.passing_threshold = 2 # how much slowdown will tolerate
+        self.am_passing = False
 
     # returns DONE = False since other cars don't collide with one another
-    def move(self):
-        # if necessary, set speed to ahead car speed to maintain distance 
-        # self.check_distance(self.lane, self.lane_pos)        
+    def move(self):   
         super().move(allow_collision = False, check_distance = True)
         return False
 

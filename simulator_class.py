@@ -5,16 +5,6 @@ from constants import *
 # Simulator has 4 components: steering wheel (angle), and 
 # brake, acceleration, clutch pedals (percentage of how far pressed)
 
-# useful constants
-# SIMULATOR_NAME = "G920 Driving Force Racing Wheel for Xbox One"
-# STEERING_WHEEL_AXIS    = 0
-# ACCELERATOR_PEDAL_AXIS = 1 
-# BRAKE_PEDAL_AXIS       = 2
-# CLUTCH_PEDAL_AXIS      = 3
-
-# AXIS_NAMES = ["STEERING_WHEEL_AXIS", "ACCELERATOR_PEDAL_AXIS", \
-#               "BRAKE_PEDAL_AXIS", "CLUTCH_PEDAL_AXIS"]
-
 class Simulator:
 
   # set up Simulator
@@ -35,6 +25,9 @@ class Simulator:
     self.degree_max = degree_max
 
     # u1 = acceleration, u2 = steering angle (radians)
+    self.prev_u1 = 0
+    self.prev_u2 = 0
+
     self.u1 = 0
     self.u2 = 0
 
@@ -80,28 +73,23 @@ class Simulator:
     else:
       print("Axis %d not configured" % axis)
 
+  def update_u1(self, new_u1):
+    self.prev_u1 = self.u1
+    self.u1 = new_u1
+
+  def update_u2(self, new_u2):
+    self.prev_u2 = self.u2
+    self.u2 = new_u2
+
   # u1 = acceleration, u2 = steering angle (radians)
   def set_axis(self, axis, val):  
 
     new_u1 = self.val_to_accel(val)
     new_u2 = self.val_to_u2(val)
 
-    if axis == STEERING_WHEEL_AXIS:      self.u2 = new_u2
-    elif axis == ACCELERATOR_PEDAL_AXIS: self.u1 = new_u1
-    elif axis == BRAKE_PEDAL_AXIS:       self.u1 = -1 * new_u1
+    if axis == STEERING_WHEEL_AXIS:      self.update_u2(new_u2)
+    elif axis == ACCELERATOR_PEDAL_AXIS: self.update_u1(new_u1)
+    elif axis == BRAKE_PEDAL_AXIS:       self.update_u1(-1 * new_u1)
     
     else:
       print("Axis %d not configured" % axis)
-
-  # def set_axis_manual(self, axis, val=0):  
-
-  #   new_u1 = self.val_to_accel(val)
-  #   new_u2 = self.val_to_u2(val)
-
-  #   if axis == STEERING_WHEEL_AXIS:      self.u1 = new_u1
-  #   elif axis == ACCELERATOR_PEDAL_AXIS: self.u2 = u2
-  #   elif axis == BRAKE_PEDAL_AXIS:       self.u2 = -1 * u2
-    
-  #   else:
-  #     print("Axis %d not configured" % axis)
-  

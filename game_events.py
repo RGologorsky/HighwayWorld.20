@@ -19,6 +19,10 @@ def move_cars(car_list, agent_car):
     return DONE
 
 def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
+    
+    if DONE or RESTART:
+       return (DONE, PAUSE, RESTART)
+
     if event.type == pygame.JOYBUTTONDOWN:
         print("button: ", event.button)
 
@@ -26,7 +30,7 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
         PAUSE = not PAUSE
 
     if PAUSE:
-        return (DONE, PAUSE, RESTART, None)
+        return (DONE, PAUSE, RESTART)
     
     # move cars, update positions
     if (event.type == CAR_MOVE_EVENT): 

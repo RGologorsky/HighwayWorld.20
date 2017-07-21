@@ -17,6 +17,13 @@ class AbstractCarMixin(object):
     data = "images"
 
     # init functions
+    def lane_to_x_boundary(self, lane, left = True):
+        if left:
+            return self.highway.lane_width * lane
+        # if right
+        return self.highway.lane_width * (lane + 1)
+
+
     def lane_center_to_pixel_pos(self, lane, lane_pos):
         x = (lane + 0.5) * self.highway.lane_width
         y = self.highway.highway_len - lane_pos
@@ -274,16 +281,33 @@ class AbstractCarMixin(object):
                 self.is_point_in_lane(back_left, self.lane) and \
                 self.is_point_in_lane(back_right, self.lane))
 
-    def dist_to_road_boundary(self):
-        return in_range(self.x, 0, self.highway.highway_len) and \
-            in_range(self.y, 0, self.highway.num_lanes*self.highway.lane_height)
+    # left = boolean, left or right lane boundary
+    def dist_to_lane_boundary(self, lane, left):
 
-    def dist_to_lane_boundary(self):
-        pass
-        # front_left  = self.y + self. 
-        # front_right =
-        # back_left   = 
-        # back_right  =  
+         x_boundary = self.lane_to_x_boundary(lane, left)
+
+         (top_left, top_right, back_left, back_right) = \
+            self.get_corners(self.x, self.y, self.heading)
+
+        (x1, y1) = top_left
+        (x2, y2) = top_right
+        (x3, y3) = back_left
+        (x4, y4) = back_right
+
+        if left:
+            return (min(x1, x2, x3, x4) - x_boundary)
+
+        # if right
+        return (x_boundary - max(x1, x2, x3, x4))
+
+
+    # left is a boolean, left or right road boundary
+    def dist_to_road_boundary(self, left):
+        if left:
+            return self.dist_to_lane_boundary(self, 0, left)
+        # if right
+        reurn self.dist_to_lane_boundary(self, self.highway.num_lanes - 1, left)
+
 
     # ROTATE CAR IMAGE
 
