@@ -30,9 +30,10 @@ class AbstractCar(AbstractCarMixin, object):
         AbstractCar.counter = itertools.count(1)
 
    
-    def __init__(self, highway, simulator=None, lane=-1, lane_pos=-1, speed=-1):
+    def __init__(self, highway, simulator=None, lane=-1, lane_pos=-1, speed=-1,role="None"):
         self.id           = next(self.counter)
-        
+        self.role         = role
+
         self.highway      = highway
         self.simulator    = simulator
 
@@ -76,8 +77,13 @@ class AbstractCar(AbstractCarMixin, object):
         # MyNamedTuple = namedtuple('MyNamedTuple', sorted(d.keys()))
         # state_tuple = MyNamedTuple(**d)
         return d
-        
+    
+    # def get_car_state(self):
+
+
+
     # if necessary, set speed to ahead car speed to maintain distance 
+    # set acceleration to 0
     def check_distance(self):
         ahead_pos = self.lane_pos + self.HEIGHT + self.keep_distance
         
@@ -87,6 +93,7 @@ class AbstractCar(AbstractCarMixin, object):
                 in_range(car.lane_pos, self.lane_pos, ahead_pos)):
                 car_in_front = True
                 self.speed = min(self.speed, car.speed) 
+                self.simulator.u1 = 0 # set acceleration
 
         # if no car in front, maintain preferred speed
         if not car_in_front:
@@ -95,15 +102,15 @@ class AbstractCar(AbstractCarMixin, object):
             
     def move(self, allow_collision = False, check_distance = False):
 
-        # convert y to increasing bottom-up
-        y = self.convert_y(self.y)
+        # # convert y to increasing bottom-up
+        # y = self.convert_y(self.y)
 
         (new_x, new_y, new_speed, new_heading) = \
-            next_step(self.x, y, self.speed, self.heading, \
+            next_step(self.x, self.y, self.speed, self.heading, \
                 self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
 
-        # convert y back
-        new_y = self.convert_y(new_y)
+        # # convert y back
+        # new_y = self.convert_y(new_y)
 
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
@@ -166,12 +173,12 @@ class AbstractCar(AbstractCarMixin, object):
         self.highway.set_all_back(amt_back)
 
     # all info about car state as 11-tuple
-    def get_state(self):
-        return (self.id, \
-                self.heading, 
-                self.lane, self.lane_pos, self.x, self.y, \
-                self.speed, self.simulator.u1, self.simulator.u2,
-                self.right_blinker, self.left_blinker)
+    # def get_state(self):
+    #     return (self.id, \
+    #             self.heading, 
+    #             self.lane, self.lane_pos, self.x, self.y, \
+    #             self.speed, self.simulator.u1, self.simulator.u2,
+    #             self.right_blinker, self.left_blinker)
         
 
 
@@ -190,5 +197,25 @@ class AbstractCar(AbstractCarMixin, object):
         if self.is_legal_speed(new_speed): 
             self.speed = new_speed
 
+    def get_simulate_step_param(self):
+        return (self.x, self.y, self.speed, \
+                self.heading, self.simulator.u1, self.simulator.u2, \
+                self.l_r, self.l_f, self.WIDTH, self.HEIGHT)
 
+    @classmethod    
+    def simulate_step(cls, simulate_step_param):
+        x, y, v, psi, u1, u2, l_r, l_f, width, height = simulate_step_param
+        
+        # # convert y
+        # y = cls.convert_y(y)
 
+        new_x, new_y, new_v, new_psi = \
+            next_step(x, y, v, psi, u1, u2, l_r, l_f)
+
+        # convert y back
+        # y = cls.convert_y(sy)
+
+        new_simulate_step_param = (new_x, new_y, new_v, new_psi, \
+            u1, u2, l_r, l_f, width, height)
+
+        return new_simulate_step_param

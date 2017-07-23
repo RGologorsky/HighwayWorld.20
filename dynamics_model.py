@@ -26,7 +26,7 @@ def next_step(x, y, v, psi, u1, u2, l_r, l_f):
     # print("delta_y", delta_y)
     # print("delta_psi (deg)", degrees(delta_psi))
     new_x   = x + delta_x
-    new_y   = y + delta_y
+    new_y   = y - delta_y   # highway oriented in opposite y-axis direction
     new_v   = v + delta_v
     new_psi = (psi + delta_psi) % (2*pi)
 
@@ -35,6 +35,16 @@ def next_step(x, y, v, psi, u1, u2, l_r, l_f):
     # new_psi =  psi_sign * (abs(new_psi) % (2*pi))
 
     return (new_x, new_y, new_v, new_psi)
+
+def n_steps_ahead(n, x, y, v, psi, u1, u2, l_r, l_f):
+    (new_x, new_y, new_speed, new_heading) = x, y, v, psi
+
+    
+    for _ in range(n):
+        (new_x, new_y, new_speed, new_heading) = \
+            next_step(new_x, new_y, new_speed, new_heading, u1, u2, l_r, l_f)
+
+    return (new_x, new_y, new_speed, new_heading)
 
 def next_step_simple(x, y, v, psi, u1, u2, l_r, l_f):
     alpha = 0.2

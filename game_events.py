@@ -2,7 +2,7 @@
 import pygame
 from constants import *
 from helpers import *
-
+from math import radians
 from playback import *
 
 highway_time_series = []
@@ -13,10 +13,11 @@ def record_highway(highway):
 
 def move_cars(car_list, agent_car):
     for car in car_list:
-        if car != agent_car:
-            car.move()
-    DONE = agent_car.move()
-    return DONE
+            DONE = car.move()
+            if DONE:
+                print("done by car: ", car.role)
+                return DONE
+    return False
 
 def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     
@@ -40,6 +41,12 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     if event.type == pygame.JOYAXISMOTION:
       simulator.set_axis(event.axis, event.value)
 
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_UP:     agent_car.simulator.u1 += 0.05
+        if event.key == pygame.K_DOWN:   agent_car.simulator.u1 -= 0.05
+        if event.key == pygame.K_LEFT:   agent_car.simulator.u2 += radians(1)
+        if event.key == pygame.K_RIGHT:  agent_car.simulator.u2 -= radians(1)
+
     # record highway
     if (event.type == RECORD_HIGHWAY_EVENT):
         record_highway(highway)
@@ -55,6 +62,7 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
 
     if is_restart(event, PAUSE):
         RESTART = True
+
     
         
     if DONE or RESTART:

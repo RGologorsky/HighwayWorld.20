@@ -2,17 +2,19 @@ import pygame
 from constants import *
 from abstract_car import AbstractCar
 from math import *
+from dynamics_model import *
+from helpers import *
 
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
-    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="other"):
 
         self.original_file_name = AbstractCar.data + "/other_car"
         self.file_name = self.original_file_name
         self.file_ext = ".png"
 
-        super().__init__(highway, simulator, lane, lane_pos, speed)
+        super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
         self.keep_distance = self.HEIGHT/2
         self.preferred_lane = self.lane # prefer original starting lane
@@ -20,6 +22,8 @@ class OtherCar(AbstractCar):
         
         self.passing_threshold = 2 # how much slowdown will tolerate
         self.am_passing = False
+
+        self.role = role
 
     # returns DONE = False since other cars don't collide with one another
     def move(self):   
@@ -28,24 +32,101 @@ class OtherCar(AbstractCar):
 
 class MergingCar(AbstractCar):
 
-    def __init__(self, highway, agent_car, simulator, lane=-1, lane_pos=-1, speed=-1):
+    def __init__(self, highway, agent_car, simulator, lane=-1, lane_pos=-1, speed=-1, role="B"):
 
         self.original_file_name = AbstractCar.data + "/other_car"
         self.file_name = self.original_file_name
         self.file_ext = ".png"
 
-        super().__init__(highway, simulator, lane, lane_pos, speed)
+        super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
-        self.keep_distance = self.HEIGHT/2
+        self.keep_distance = self.HEIGHT
         self.preferred_lane = self.lane # prefer original starting lane
         self.preferred_speed = self.speed # prefer original speed
         
         self.passing_threshold = 2 # how much slowdown will tolerate
         self.am_passing = False
 
-    # returns DONE = False since other cars don't collide with one another
-    def move(self):   
-        super().move(allow_collision = False, check_distance = True)
+        self.agent_car = agent_car
+        self.left_blinker = True
+
+
+    # returns DONE
+    def move(self): 
+        self.check_distance()
+
+        # convert y to increasing bottom-up
+        # y = self.convert_y(self.y)
+
+        # a_y = self.agent_car.convert_y(self.agent_car.y)
+
+        # apply constant acceleration, linear increase speed
+        self.simulator.u1 = 0.10
+
+
+        # if ahead of car A by margin, begin turning wheel to 45 degrees
+        if (self.lane_pos > self.agent_car.lane_pos + self.HEIGHT/5):
+            self.simulator.u2 += radians(5)
+
+
+        # project position forward in 2 time steps
+        is_collision = self.highway.crash_in_n_steps(2)
+
+        while is_collision:
+            print("forecast is collision")
+
+            # stop accelerating
+            self.simulator.u1 = 0
+
+            # start turning wheel back if was turning into other lane
+            if self.heading > radians(90):
+                self.simulator.u2 -= radians(5)
+            else:
+                self.simulator.u2 = 0
+
+            # project position forward in 2 time steps w/ new accel and steering
+            is_collision = self.highway.crash_in_n_steps(2)
+
+        
+        # no collision forecasted
+
+        # convert y to increasing bottom-up
+        # y = self.convert_y(self.y)
+
+        (new_x, new_y, new_speed, new_heading) = \
+            next_step(self.x, self.y, self.speed, self.heading, \
+                self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
+
+        # convert y back
+        # new_y = self.convert_y(new_y)
+        
+        # update lane, lane pos
+        new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
+
+        self.heading = new_heading
+
+        if self.is_legal_speed(new_speed):
+            self.speed = new_speed
+
+        if self.is_legal_pos(new_x, new_y, new_heading):
+            self.x, self.y           = new_x, new_y
+            self.lane, self.lane_pos = new_lane, new_lane_pos
+
+            if self.lane == 0:
+                print("merge success")
+                DONE = True # SUCCESSFULLY MERGED IN
+                return DONE
+        else:
+            self.y -= self.speed
+            self.lane, self.lane_pos = self.pixel_to_lane_pos(self.x, self.y)
+        self.rotate()
+
+        # if behind car A by margin, done
+        if (self.lane_pos < self.agent_car.lane_pos - 2 * self.HEIGHT):
+            print("merge failed")
+            DONE = True
+            return DONE
+  
         return False
 
 class AgentCar(AbstractCar):
@@ -54,7 +135,7 @@ class AgentCar(AbstractCar):
     def init_start_state(self):
         self.trajectory.append(self.get_feature())
 
-    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="A"):
         AbstractCar.reset_counter();
 
         self.trajectory = []
@@ -63,12 +144,16 @@ class AgentCar(AbstractCar):
         self.file_name = self.original_file_name
         self.file_ext = ".png"
 
-        super().__init__(highway, simulator, lane, lane_pos, speed)
+        super().__init__(highway, simulator, lane, lane_pos, speed, role)
         
 
     # returns whether game is DONE
     # when agent car moves, new highway track comes down (eg stays in place)
     # moves all other cars/reference point down
+    
+    # def get_state(self):
+
+
     def move(self):
 
         collision = super().move(allow_collision = True);

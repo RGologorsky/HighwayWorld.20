@@ -4,6 +4,7 @@ from constants import *
 from game_events     import check_event
 from playback import *
 from scenarios import *
+from helpers import is_quit
 
 
 # returns when DONE
@@ -19,6 +20,15 @@ def play_game(scenario_num=0):
                             DONE, PAUSE, RESTART);
         redraw_all(screen, draw_list)
     print("Simulation Over")
+
+    # keep screen alive
+    DONE = False
+    while not DONE:
+        for event in pygame.event.get():
+            # If user clicked close or quits
+            if is_quit(event): 
+                DONE = True
+        redraw_all(screen, draw_list)
 
     if RESTART:
         play_game();            # restart the game

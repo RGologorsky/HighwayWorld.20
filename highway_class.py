@@ -8,6 +8,8 @@ from highway_mixin import HighwayMixin
 
 # not efficient 
 from copy import deepcopy
+
+from abstract_car import AbstractCar
 """
 Implements the Highway World 2.0 environment
 
@@ -110,7 +112,6 @@ class Highway(HighwayMixin, IRLworld):
 
         return (closest_car.id, min_num_steps_away, closest_car.speed)
 
-
     # returns (id, #steps away, speed) of the closest cars ahead/behind 
     # in current lane & neighboring left/right lanes.
     def get_closest_cars(self, lane, lane_pos):
@@ -135,6 +136,36 @@ class Highway(HighwayMixin, IRLworld):
         closest_cars.append(closest_right_behind)
 
         return closest_cars
+
+
+    # get positions of all cars, project n steps in future, step by step
+    # check at each point for crash
+    def crash_in_n_steps(self, n):
+
+        # initial positions
+        future_positions = []
+        for car in self.car_list:
+            future_positions.append(car.get_simulate_step_param())
+
+
+        num_cars = len(future_positions)
+
+        for time_step in range(1,n):
+            for i in range(num_cars):
+                curr_car_pos = future_positions[i]
+                future_positions[i] = AbstractCar.simulate_step(curr_car_pos)
+
+            is_collision = is_crash(future_positions)
+            if is_collision:
+                return True
+        
+        return False
+
+
+    # def get_car_distances(self):
+
+
+
 
 
     def add_car(self, car):

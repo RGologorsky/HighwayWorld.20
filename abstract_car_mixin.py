@@ -168,81 +168,66 @@ class AbstractCarMixin(object):
     # has a corner in some other car's rectangle
     # go through car lis in highway (ok for small numbers of cars) 
 
-    def rotate_point(self, orig_pt, center_pt, angle):
+    # def get_corners(x, y, heading, WIDTH, HEIGHT):
+    #     angle = heading - pi/2
 
-        (center_x, old_center_y) = center_pt
-        (x, old_y) = orig_pt
+    #     top_left  = (x - WIDTH/2, y - HEIGHT/2)
+    #     top_right = (x + WIDTH/2, y - HEIGHT/2)
 
-        # switch y axis to be increasing from bottom up instead of top-down
-        center_y = self.highway.highway_len - old_center_y
-        y        = self.highway.highway_len - old_y
+    #     back_left = (x - WIDTH/2, y + HEIGHT/2)
+    #     back_right= (x + WIDTH/2, y + HEIGHT/2)
 
-        # vector from origin to point
-        delta_x, delta_y = (x - center_x, y - center_y)
+    #     new_top_left = rotate_point(top_left,  (x, y), angle)
+    #     new_top_right= rotate_point(top_right, (x, y), angle)
 
-        # perform rotation (multiply rotation matrix)
-        # here angle is complement
-        new_delta_x = delta_x * cos(angle) - delta_y * sin(angle)
-        new_delta_y = delta_x * sin(angle) + delta_y * cos(angle)
+    #     new_back_left = rotate_point(back_left, (x, y), angle)
+    #     new_back_right= rotate_point(back_right,(x, y), angle)
 
-        # translate the point back
-        new_x = center_x + new_delta_x
-        new_y = center_y + new_delta_y
+    #     return (new_top_left, new_top_right, new_back_left, new_back_right)
 
-        # change y coord to be increasing top-down
-        new_y = self.highway.highway_len - new_y
-
-        return (new_x, new_y)
-
-
-    def get_corners(self, x, y, heading):
-        angle = heading - pi/2
-
-        top_left  = (x - self.WIDTH/2, y - self.HEIGHT/2)
-        top_right = (x + self.WIDTH/2, y - self.HEIGHT/2)
-
-        back_left = (x - self.WIDTH/2, y + self.HEIGHT/2)
-        back_right= (x + self.WIDTH/2, y + self.HEIGHT/2)
-
-        new_top_left = self.rotate_point(top_left,  (x, y), angle)
-        new_top_right= self.rotate_point(top_right, (x, y), angle)
-
-        new_back_left = self.rotate_point(back_left, (x, y), angle)
-        new_back_right= self.rotate_point(back_right,(x, y), angle)
-
-        return (new_top_left, new_top_right, new_back_left, new_back_right)
+    # def get_car_rect_corners(x, y, heading, WIDTH, HEIGHT):
+    #     A, B, D, C = self.get_corners(x, y, heading, WIDTH, HEIGHT)
+    #     return A, B, C, D
 
     def is_collision(self, new_x, new_y, new_heading):
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
-            self.get_corners(new_x, new_y, new_heading)
+            get_corners(new_x, new_y, new_heading, self.WIDTH, self.HEIGHT)
 
         # see if corners collide with any other car on the road
         for car in self.highway.car_list:
             if car == self:
                 continue
-            # Rect(left, top, width, height)
-            (left, top) = center_to_upper_left(self, car.x, car.y)
-            car_rect = pygame.Rect(left, top, self.WIDTH, self.HEIGHT)
             
-            collision = car_rect.collidepoint(new_top_left) or \
-                        car_rect.collidepoint(new_top_right) or \
-                        car_rect.collidepoint(new_back_left) or \
-                        car_rect.collidepoint(new_back_right)
+            car_rect = get_car_rect_corners(car.x, car.y, car.heading, \
+                                            car.WIDTH, car.HEIGHT)
+
+            collision = collidepoint(car_rect, new_top_left) or \
+                        collidepoint(car_rect, new_top_right) or \
+                        collidepoint(car_rect, new_back_left) or \
+                        collidepoint(car_rect, new_back_right)
+
+            # (left, top) = center_to_upper_left(self, car.x, car.y)
+            # car_rect = pygame.Rect(left, top, self.WIDTH, self.HEIGHT)
+            
+            # collision = car_rect.collidepoint(new_top_left) or \
+            #             car_rect.collidepoint(new_top_right) or \
+            #             car_rect.collidepoint(new_back_left) or \
+            #             car_rect.collidepoint(new_back_right)
 
             if collision:
                 lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
                 print("car has collision: ", self.id, lane, lane_pos)
-                print(car_rect.collidepoint(new_top_left))
-                print(car_rect.collidepoint(new_top_right))
-                print(car_rect.collidepoint(new_back_left))
-                print(car_rect.collidepoint(new_back_right))
+                # print(car_rect.collidepoint(new_top_left))
+                # print(car_rect.collidepoint(new_top_right))
+                # print(car_rect.collidepoint(new_back_left))
+                # print(car_rect.collidepoint(new_back_right))
                 return True
         return False
 
 
     def is_legal_pos(self, new_x, new_y, new_heading):
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
-            self.get_corners(new_x, new_y, new_heading)
+            get_corners(new_x, new_y, new_heading, self.WIDTH, self.HEIGHT)
 
         # see if corners collide with highway
         
@@ -284,10 +269,10 @@ class AbstractCarMixin(object):
     # left = boolean, left or right lane boundary
     def dist_to_lane_boundary(self, lane, left):
 
-         x_boundary = self.lane_to_x_boundary(lane, left)
+        x_boundary = self.lane_to_x_boundary(lane, left)
 
-         (top_left, top_right, back_left, back_right) = \
-            self.get_corners(self.x, self.y, self.heading)
+        (top_left, top_right, back_left, back_right) = \
+            get_corners(self.x, self.y, self.heading, self.WIDTH, self.HEIGHT)
 
         (x1, y1) = top_left
         (x2, y2) = top_right
@@ -306,7 +291,7 @@ class AbstractCarMixin(object):
         if left:
             return self.dist_to_lane_boundary(self, 0, left)
         # if right
-        reurn self.dist_to_lane_boundary(self, self.highway.num_lanes - 1, left)
+        return self.dist_to_lane_boundary(self, self.highway.num_lanes - 1, left)
 
 
     # ROTATE CAR IMAGE
@@ -368,7 +353,7 @@ class AbstractCarMixin(object):
 
         # draw corners of car
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
-            self.get_corners(self.x, self.y, self.heading)
+            get_corners(self.x, self.y, self.heading, self.WIDTH, self.HEIGHT)
 
         pygame.draw.circle(screen, BLACK, self.int_coord(new_top_left), 5, 0)
         pygame.draw.circle(screen, BLACK, self.int_coord(new_top_right), 5, 0)
