@@ -27,14 +27,16 @@ class Highway(HighwayMixin, IRLworld):
     def add_reference_pt(self, tree):
         self.reference_pts.append(tree)
     
-    def __init__(self, num_lanes=3, highway_len = 700, 
-                    max_num_cars=10, discount = 0.8):
+    def __init__(self, num_lanes=3, highway_len = 700, lane_width=76):
 
         self.num_lanes = num_lanes
         self.highway_len = highway_len
 
+        self.lane_width = lane_width
+
         self.HEIGHT = self.highway_len
         self.WIDTH = self.num_lanes * self.lane_width
+
 
 
     def get_car_state_record_list(self):
@@ -59,20 +61,12 @@ class Highway(HighwayMixin, IRLworld):
         d['lane_sep_color'] = self.lane_sep_color
         d['lane_color']     = self.lane_color
         
-        d['lane_height'] = self.lane_height
         d['lane_width'] = self.lane_width
 
         d['increment'] = self.increment
         d['max_increment'] = self.max_increment
 
-        # print("#######")
-        # print(d)
-        # print("#######")
 
-
-        # MyNamedTuple = namedtuple('MyNamedTuple', sorted(d.keys()))
-        # state_tuple = MyNamedTuple(**d)
-        
         return d
 
     def get_highway_param(self):
@@ -160,10 +154,6 @@ class Highway(HighwayMixin, IRLworld):
                 return True
         
         return False
-
-
-    # def get_car_distances(self):
-
 
 
 

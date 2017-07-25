@@ -49,7 +49,7 @@ def playback(time):
 
 
 def main():
-    scenario_num = 0
+    scenario_num = 1
     play_game(scenario_num)
 
     # time = "2017-07-21 08-48-24"

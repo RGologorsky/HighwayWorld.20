@@ -10,9 +10,6 @@ class HighwayMixin(object):
     lane_sep_color = WHITE
     lane_color     = GRAY
     
-    lane_height = 76 # little more than Car.height
-    lane_width = 76 # little more than Car.height
-
     increment = 3.5 # lane-change
     max_increment = 7
 
@@ -31,7 +28,7 @@ class HighwayMixin(object):
 
     def draw_lane(self, screen, x, y):
         pygame.draw.rect(screen, self.lane_color, \
-            [x,y,self.lane_height, self.highway_len], 0)
+            [x,y,self.lane_width, self.highway_len], 0)
 
     def draw_sep(self, screen, x, y):
         step_size = int(self.highway_len/20)
@@ -56,6 +53,14 @@ class HighwayMixin(object):
         simulator_settings = agent_car.print_simulator_settings()
         render_multi_line(screen, simulator_settings, x, y)
     
+    def draw_agent_speeds(self, max_speed, curr_speed, screen, loc = (0, 0)):
+        (x, y) = loc
+
+        # draw speed limit
+        speed_limit = "Speed Limit: %.2f" % max_speed
+        curr_speed = "Current Speed: %.2f" % curr_speed
+        render_multi_line(screen, speed_limit + "\n" + curr_speed, x, y, text_color = RED)
+
     def draw(self, screen):
         
         # start at top-left
@@ -89,7 +94,8 @@ class HighwayMixin(object):
         x, curr_y  = self.lane_width * self.num_lanes + 100, 10
         if agent_car:
             self.draw_agent_car(agent_car, screen, x, curr_y)
-
+            # draw speed limit and agent car current speed
+            self.draw_agent_speeds(agent_car.max_speed, agent_car.speed, screen)
             # draw acceleration, angle, and brake
             curr_y += 200
             self.draw_simulator_settings(agent_car, screen, x, curr_y)
@@ -97,5 +103,6 @@ class HighwayMixin(object):
         # draw highway state
         curr_y += 150
         self.draw_highway_state(screen, x, curr_y) 
+
 
     

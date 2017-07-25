@@ -55,11 +55,6 @@ class MergingCar(AbstractCar):
     def move(self): 
         self.check_distance()
 
-        # convert y to increasing bottom-up
-        # y = self.convert_y(self.y)
-
-        # a_y = self.agent_car.convert_y(self.agent_car.y)
-
         # apply constant acceleration, linear increase speed
         self.simulator.u1 = 0.10
 
@@ -90,15 +85,10 @@ class MergingCar(AbstractCar):
         
         # no collision forecasted
 
-        # convert y to increasing bottom-up
-        # y = self.convert_y(self.y)
-
         (new_x, new_y, new_speed, new_heading) = \
             next_step(self.x, self.y, self.speed, self.heading, \
                 self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
 
-        # convert y back
-        # new_y = self.convert_y(new_y)
         
         # update lane, lane pos
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)

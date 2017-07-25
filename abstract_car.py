@@ -64,18 +64,13 @@ class AbstractCar(AbstractCarMixin, object):
         self.highway.add_car(self)
 
     def get_car_state_record(self):
-        # d = deepcopy(self.__dict__)
+        # these are objects
         no_keys = ["simulator", "highway", "image_car", "straight_image_car"]
         d = {key:val for key, val in self.__dict__.items() if key not in no_keys}
         d['image_file'] = self.file_name + self.file_ext
         d['u1'] = self.simulator.u1
         d['u2'] = self.simulator.u2
 
-        # print("d")
-        # print(d.keys())
-
-        # MyNamedTuple = namedtuple('MyNamedTuple', sorted(d.keys()))
-        # state_tuple = MyNamedTuple(**d)
         return d
     
     # def get_car_state(self):
@@ -102,19 +97,12 @@ class AbstractCar(AbstractCarMixin, object):
             
     def move(self, allow_collision = False, check_distance = False):
 
-        # # convert y to increasing bottom-up
-        # y = self.convert_y(self.y)
-
         (new_x, new_y, new_speed, new_heading) = \
             next_step(self.x, self.y, self.speed, self.heading, \
                 self.simulator.u1, self.simulator.u2, self.l_r, self.l_f)
 
-        # # convert y back
-        # new_y = self.convert_y(new_y)
-
         new_lane, new_lane_pos = self.pixel_to_lane_pos(new_x, new_y)
 
-      
 
         is_collision = self.is_collision(new_x, new_y, new_heading)
 
@@ -172,15 +160,6 @@ class AbstractCar(AbstractCarMixin, object):
         amt_back = self.speed
         self.highway.set_all_back(amt_back)
 
-    # all info about car state as 11-tuple
-    # def get_state(self):
-    #     return (self.id, \
-    #             self.heading, 
-    #             self.lane, self.lane_pos, self.x, self.y, \
-    #             self.speed, self.simulator.u1, self.simulator.u2,
-    #             self.right_blinker, self.left_blinker)
-        
-
 
     # Keyboard input or regulated speed change to car in front
     def change_lane(self, dir):
@@ -206,14 +185,9 @@ class AbstractCar(AbstractCarMixin, object):
     def simulate_step(cls, simulate_step_param):
         x, y, v, psi, u1, u2, l_r, l_f, width, height = simulate_step_param
         
-        # # convert y
-        # y = cls.convert_y(y)
-
         new_x, new_y, new_v, new_psi = \
             next_step(x, y, v, psi, u1, u2, l_r, l_f)
 
-        # convert y back
-        # y = cls.convert_y(sy)
 
         new_simulate_step_param = (new_x, new_y, new_v, new_psi, \
             u1, u2, l_r, l_f, width, height)

@@ -132,21 +132,29 @@ class AbstractCarMixin(object):
 
 
     # GENERAL USEFUL functions
+
+    # converts y from pygame coordinate (y increasing from top-down) to
+    # conventional y axis (y increasing from bottom-up)
     def convert_y(self, y):
         return self.highway.highway_len - y
 
+    # returns a random lane from the available highway lanes
     def rand_lane(self): 
         return randint(0, self.highway.num_lanes - 1)
     
+    # returns a random lane position from the possible lane positions
     def rand_lane_pos(self): 
         return randint(0, self.highway.highway_len - self.WIDTH - 1)
     
+    # returns a random speed between the min and max speed (inclusive)
     def rand_speed(self): 
         return randint(self.min_speed, self.max_speed)
 
+    # returns the car's position (x, y) in terms of pixel position
     def get_pixel_pos(self):
         return (self.x, self.y)
 
+    # converts the pixel (x, y) position to a (lane number, lane position)
     def pixel_to_lane_pos(self, x, y):
         lane     = int(x / self.highway.lane_width)
         lane_pos = int(round(self.convert_y(y)))
@@ -155,39 +163,17 @@ class AbstractCarMixin(object):
 
     # "IS" FUNCTIONS
 
+    # returns whether the given lane is a legal lane
     def is_legal_lane(self, lane):
         return in_range(lane, 0, self.highway.num_lanes - 1)
 
+     # returns whether the given lane position is a legal lane position
     def is_legal_lane_pos(self, lane_pos):
         return in_range(lane, 0, self.highway.highway_len - 1)
 
     def is_legal_speed(self, new_speed):
         return in_range(new_speed, self.min_speed, self.max_speed)
 
-    # check if rectangle centered at (new_x, new_y) w/given new_angle
-    # has a corner in some other car's rectangle
-    # go through car lis in highway (ok for small numbers of cars) 
-
-    # def get_corners(x, y, heading, WIDTH, HEIGHT):
-    #     angle = heading - pi/2
-
-    #     top_left  = (x - WIDTH/2, y - HEIGHT/2)
-    #     top_right = (x + WIDTH/2, y - HEIGHT/2)
-
-    #     back_left = (x - WIDTH/2, y + HEIGHT/2)
-    #     back_right= (x + WIDTH/2, y + HEIGHT/2)
-
-    #     new_top_left = rotate_point(top_left,  (x, y), angle)
-    #     new_top_right= rotate_point(top_right, (x, y), angle)
-
-    #     new_back_left = rotate_point(back_left, (x, y), angle)
-    #     new_back_right= rotate_point(back_right,(x, y), angle)
-
-    #     return (new_top_left, new_top_right, new_back_left, new_back_right)
-
-    # def get_car_rect_corners(x, y, heading, WIDTH, HEIGHT):
-    #     A, B, D, C = self.get_corners(x, y, heading, WIDTH, HEIGHT)
-    #     return A, B, C, D
 
     def is_collision(self, new_x, new_y, new_heading):
         (new_top_left, new_top_right, new_back_left, new_back_right) = \
@@ -339,14 +325,12 @@ class AbstractCarMixin(object):
 
     def draw(self, screen):
         (center_x, center_y) = self.get_pixel_pos()
-        # upper_left_pos = center_to_upper_left(self, center_x, center_y)
 
         image_rect = self.image_car.get_rect()
         image_rect.centerx = center_x
         image_rect.centery = center_y
 
         screen.blit(self.image_car, image_rect)        
-        # screen.blit(self.image_car, upper_left_pos)
         
         # draw center of car
         pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 5, 0)
@@ -359,29 +343,3 @@ class AbstractCarMixin(object):
         pygame.draw.circle(screen, BLACK, self.int_coord(new_top_right), 5, 0)
         pygame.draw.circle(screen, BLACK, self.int_coord(new_back_left), 5, 0)
         pygame.draw.circle(screen, BLACK, self.int_coord(new_back_right), 5, 0)
-
-
-
-#  # straight collision
-# def is_collision(self, new_lane, new_lane_pos):
-#     behind_pos = max(0,new_lane_pos - self.WIDTH)
-#     ahead_pos =  min(new_lane_pos + self.WIDTH, self.highway.highway_len-1)
-
-#     my_idx      = self.highway.pos_to_idx(new_lane, new_lane_pos)
-#     behind_idx  = self.highway.pos_to_idx(new_lane, behind_pos)
-#     ahead_idx   = self.highway.pos_to_idx(new_lane, ahead_pos)
-
-#     no_crash = True
-#     curr_idx = behind_idx
-    
-#     while (no_crash and curr_idx <= ahead_idx):
-#         neighbor = self.highway.idx_to_state(curr_idx)
-#         no_crash = (neighbor == (-1, -1)) or (neighbor[0] == self.id)
-#         curr_idx += 1
-
-#         if not no_crash:
-#             print("crash car idx %d" % (curr_idx - 1))
-
-#     if (not no_crash):
-#         print ("collision occured, car id %d" % self.id)
-#     return (not no_crash)
