@@ -1,6 +1,7 @@
 import pygame
 from math import pi, radians
 from constants import *
+from helpers import *
 
 # Simulator has 4 components: steering wheel (angle), and 
 # brake, acceleration, clutch pedals (percentage of how far pressed)
@@ -82,10 +83,16 @@ class Simulator:
     self.u2 = new_u2
 
   # u1 = acceleration, u2 = steering angle (radians)
-  def set_axis(self, axis, val):  
+  def set_axis(self, axis, val, discrete=True):  
 
     new_u1 = self.val_to_accel(val)
     new_u2 = self.val_to_u2(val)
+
+    if discrete:
+      new_u1 = discretize_within_range(new_u1, -1, 1, 0.2)
+      new_u2 = discretize_within_range(new_u1, -radians(30), radians(30), \
+                                                radians(15))
+
 
     if axis == STEERING_WHEEL_AXIS:      self.update_u2(new_u2)
     elif axis == ACCELERATOR_PEDAL_AXIS: self.update_u1(new_u1)

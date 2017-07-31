@@ -8,11 +8,17 @@ from helpers import *
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
-    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="other"):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
+        role="other", file_name="other_car"):
 
-        self.original_file_name = AbstractCar.data + "/other_car"
+        self.original_file_name = AbstractCar.data + "/" + file_name
         self.file_name = self.original_file_name
         self.file_ext = ".png"
+
+        # standard car
+        if not hasattr(self, "WIDTH") or not hasattr(self, "HEIGHT"):
+            self.WIDTH = 44 #228
+            self.HEIGHT = 100 #128
 
         super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
@@ -30,6 +36,30 @@ class OtherCar(AbstractCar):
         super().move(allow_collision = False, check_distance = True)
         return False
 
+class SchoolBus(OtherCar):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
+        role="school_bus", file_name="school_bus"):
+
+        self.WIDTH = 47
+        self.HEIGHT = 192
+        super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
+
+class LongTruck(OtherCar):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
+        role="long_truck", file_name="long_truck"):
+
+        self.WIDTH = 44
+        self.HEIGHT = 199
+        super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
+
+class MediumTruck(OtherCar):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
+        role="medium_truck", file_name="medium_truck"):
+
+        self.WIDTH = 44
+        self.HEIGHT = 138
+        super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
+
 class MergingCar(AbstractCar):
 
     def __init__(self, highway, agent_car, simulator, lane=-1, lane_pos=-1, speed=-1, role="B"):
@@ -37,6 +67,9 @@ class MergingCar(AbstractCar):
         self.original_file_name = AbstractCar.data + "/other_car"
         self.file_name = self.original_file_name
         self.file_ext = ".png"
+
+        self.WIDTH = 44 #228
+        self.HEIGHT = 100 #128
 
         super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
@@ -125,14 +158,20 @@ class AgentCar(AbstractCar):
     def init_start_state(self):
         self.trajectory.append(self.get_feature())
 
-    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="A"):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="agent"):
         AbstractCar.reset_counter();
 
         self.trajectory = []
 
-        self.original_file_name = AbstractCar.data + "/agent_car"
+        self.original_file_name = AbstractCar.data + "/medium_truck"
+        self.WIDTH = 44 #228
+        self.HEIGHT = 138 #128
+        # self.original_file_name = AbstractCar.data + "/agent_car"
         self.file_name = self.original_file_name
         self.file_ext = ".png"
+
+        # self.WIDTH = 44 #228
+        # self.HEIGHT = 100 #128
 
         super().__init__(highway, simulator, lane, lane_pos, speed, role)
         
@@ -146,8 +185,11 @@ class AgentCar(AbstractCar):
 
     def move(self):
 
-        collision = super().move(allow_collision = True);
-        
+        old_y = self.y
+        collision = super().move(allow_collision = True, check_legal_pos = True);
+        new_y = self.y
+
+        amt_back = old_y - new_y # flipped orientation, y inc from top-down
         # update trajectory
         self.trajectory.append(Z)
         curr_feature = self.get_feature()
@@ -161,8 +203,8 @@ class AgentCar(AbstractCar):
             if collision: print("Collision Occurred")
             if reached_end: print("Successfully Reached End of Track")
          
-        self.highway.increment = self.highway.max_increment * self.speed/self.max_speed            
-        self.set_all_cars_back()
+        # let highway draw functions know to drop down
+        self.set_all_cars_back(amt_back)
 
         return game_ended
 

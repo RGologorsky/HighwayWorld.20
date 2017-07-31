@@ -1,6 +1,6 @@
 import pygame
 from helpers import *
-from abstract_car_mixin import AbstractCarMixin
+from munch import munchify
 
 # pygame.sprite.Sprite
 class Tree(object):
@@ -8,12 +8,17 @@ class Tree(object):
     WIDTH = 75
     HEIGHT = 118
 
-    def __init__(self, highway_param):
+    def __init__(self, highway_param_dict):
+        # convert highway param dict to object w/ attribute access
+        highway_param = munchify(highway_param_dict)
+
         self.image = pygame.image.load(Tree.image_file).convert_alpha()
 
-        num_lanes, self.highway_len, lane_width = highway_param
+        self.highway_len = highway_param.highway_len
         
-        self.x = num_lanes * lane_width + Tree.WIDTH/2
+        self.x = highway_param.x_offset \
+                 + highway_param.num_lanes * highway_param.lane_width \
+                 + Tree.WIDTH/2
         self.y = 0 
 
     def draw(self, screen):

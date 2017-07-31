@@ -5,10 +5,16 @@ from helpers import *
 from math import radians
 from playback import *
 
+highway_param = None
 highway_time_series = []
 
 def record_highway(highway):
-    highway_time_series.append(highway.get_highway_state_record())
+    highway_time_series.append(highway.get_highway_cars())
+
+    global highway_param
+
+    if not highway_param:
+        highway_param = highway.get_highway_param()
 
 
 def move_cars(car_list, agent_car):
@@ -23,6 +29,13 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
     
     if DONE or RESTART:
        return (DONE, PAUSE, RESTART)
+
+    # If user clicked close or quits
+    if is_quit(event): 
+        DONE = True
+
+    if is_restart(event, PAUSE):
+        RESTART = True
 
     if event.type == pygame.JOYBUTTONDOWN:
         print("button: ", event.button)
@@ -42,8 +55,12 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
       simulator.set_axis(event.axis, event.value)
 
     if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_UP:     agent_car.simulator.u1 += 0.05
-        if event.key == pygame.K_DOWN:   agent_car.simulator.u1 -= 0.05
+        if event.key == pygame.K_UP:     
+            agent_car.speed += 0.1
+            # agent_car.simulator.u1 += 0.02
+        if event.key == pygame.K_DOWN:
+            agent_car.speed -= 0.1   
+            # agent_car.simulator.u1 -= 0.02
         if event.key == pygame.K_LEFT:   agent_car.simulator.u2 += radians(1)
         if event.key == pygame.K_RIGHT:  agent_car.simulator.u2 -= radians(1)
 
@@ -56,22 +73,11 @@ def check_event(event, highway, agent_car, simulator, DONE, PAUSE, RESTART):
         agent_car.toggle_blinker(event.button)
 
 
-    # If user clicked close or quits
-    if is_quit(event): 
-        DONE = True
-
-    if is_restart(event, PAUSE):
-        RESTART = True
-
     
         
     if DONE or RESTART:
-        Playback.write_recorded_data(highway_time_series)
+        highway_data = (highway_param, highway_time_series)
+        Playback.write_recorded_data(highway_data)
 
 
     return (DONE, PAUSE, RESTART)
-
-# if event.key == pygame.K_LEFT: agent_car.change_lane(LEFT)
-# if event.key == pygame.K_RIGHT: agent_car.change_lane(RIGHT)
-# if event.key == pygame.K_UP: agent_car.change_speed(FASTER)
-# if event.key == pygame.K_DOWN: agent_car.change_speed(SLOWER)

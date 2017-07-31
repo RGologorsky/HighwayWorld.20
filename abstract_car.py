@@ -48,32 +48,72 @@ class AbstractCar(AbstractCarMixin, object):
         self.init_speed(speed, normal=True)
 
         # Center of mass = middle.
-        self.l_r = self.HEIGHT * 1/4.0
-        self.l_f = self.HEIGHT * 3/4.0
+        self.l_r = self.HEIGHT * 0.50
+        self.l_f = self.HEIGHT * 0.50
 
         # blinkers
         self.right_blinker = False
         self.left_blinker  = False
 
-        # file images
-        file = self.file_name + self.file_ext
-        self.image_car = pygame.image.load(file).convert_alpha()
-        self.straight_image_car = self.image_car
+        # init car image and straight car image, req: file_name, file_ext init
+        self.init_car_images()
 
         # update highway
         self.highway.add_car(self)
 
-    def get_car_state_record(self):
-        # these are objects
+    def get_all_car_state(self):
+        # dont save objects, save values
         no_keys = ["simulator", "highway", "image_car", "straight_image_car"]
         d = {key:val for key, val in self.__dict__.items() if key not in no_keys}
         d['image_file'] = self.file_name + self.file_ext
         d['u1'] = self.simulator.u1
         d['u2'] = self.simulator.u2
 
+        # print("car state: ")
+        # print(d.keys())
         return d
     
+
+    def smallest_dist_to_point(self, pos, y_axis=True):
+        (x, y) = pos
+
+        (top_left, top_right, back_left, back_right) = \
+            get_corners(self.x, self.y, self.heading, self.WIDTH, self.HEIGHT)
+
+        (x1, y1) = top_left
+        (x2, y2) = top_right
+        (x3, y3) = back_left
+        (x4, y4) = back_right
+
+        if y_axis:
+            return min(abs(y - y1), abs(y - y2), abs(y - y3), abs(y - y4))
+        if x_axis:
+            return min(abs(x - x1), abs(x - x2), abs(x - x3), abs(x - x4))
+
+
+
+
     # def get_car_state(self):
+    #     # in test scenario, just two cars
+    #     for car in self.highway.car_list:
+    #         car.
+    #     # want gap size to ahead, gap size to behind
+    #     # and speeds
+
+    #     closest_cars.append(self.id)
+    #     closest_cars.append(self.lane)
+    #     closest_cars.append(self.lane_pos)
+    #     closest_cars.append(self.heading)
+    #     closest_cars.append(self.speed)
+    #     closest_cars.append(self.simulator.u1)
+    #     closest_cars.append(self.simulator.u2)
+
+    #     # u1 = current accel, u2 = current steering angle
+    #     d['u1'] = self.simulator.u1
+    #     d['u2'] = self.simulator.u2
+    #     d['heading'] = self.heading
+    #     d['']
+
 
 
 
@@ -95,7 +135,8 @@ class AbstractCar(AbstractCarMixin, object):
             self.speed = self.preferred_speed
 
             
-    def move(self, allow_collision = False, check_distance = False):
+    def move(self, allow_collision = False, check_distance = False, \
+                check_legal_pos = False):
 
         (new_x, new_y, new_speed, new_heading) = \
             next_step(self.x, self.y, self.speed, self.heading, \
@@ -116,15 +157,14 @@ class AbstractCar(AbstractCarMixin, object):
             if check_distance:
                 self.check_distance()
 
-            
-            # CHECK IF LEGAL SPEED, LANE, POSIION            
-            if self.is_legal_pos(new_x, new_y, new_heading):
-                self.x, self.y           = new_x, new_y
-                self.lane, self.lane_pos = new_lane, new_lane_pos
 
-            else:
-                self.y -= self.speed
-                self.lane, self.lane_pos = self.pixel_to_lane_pos(self.x, self.y)
+            
+            # CHECK IF LEGAL LANE, POSIION (if needed)
+            is_legal_pos = self.is_legal_pos(new_x, new_y, new_heading)
+
+            if not check_legal_pos or is_legal_pos:
+                    self.x, self.y           = new_x, new_y
+                    self.lane, self.lane_pos = new_lane, new_lane_pos
             self.rotate()
                 
         return is_collision
@@ -156,9 +196,10 @@ class AbstractCar(AbstractCarMixin, object):
         self.y        = new_y
         self.lane_pos = new_lane_pos
 
-    def set_all_cars_back(self):
-        amt_back = self.speed
+    def set_all_cars_back(self, amt_back):   
+        self.highway.down_speed = amt_back 
         self.highway.set_all_back(amt_back)
+
 
 
     # Keyboard input or regulated speed change to car in front

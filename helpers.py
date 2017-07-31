@@ -2,8 +2,18 @@
 import pygame
 from constants import *
 from math import pi, cos, sin, radians
+from collections import namedtuple
 
 # useful functions
+
+def discretize_within_range(x, min, max, base=0.1, prec=2):
+    if x < min: return min
+    if x > max: return max
+    else:
+        return round((base * (round(x/base))), prec)
+
+def dict_to_namedtuple(dictionary):
+    return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
 def redraw_all(screen, draw_list):
     screen.fill(GREEN)
@@ -23,27 +33,11 @@ def render_multi_line(screen, text, x, y, text_color=BLACK):
 def in_range(x, a, b):
     return a <= x and x <= b
 
+# geomretry functions
 def center_to_upper_left(self, x, y):
     return (x - self.WIDTH/2, y - self.HEIGHT/2)
 
-# game events helpers
-def is_quit(event):
-    return (event.type == pygame.QUIT) or \
-        ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE))
 
-def is_restart(event, PAUSE):
-    return event.type == pygame.JOYBUTTONDOWN and event.button == R
-
-def is_pause_pressed(event):
-    return ((event.type == pygame.KEYDOWN and event.key == pygame.K_p) or \
-        event.type == pygame.JOYBUTTONDOWN and event.button == P)
-
-def is_blinker(event):
-    return event.type == pygame.JOYBUTTONDOWN and \
-        (event.button == LEFT_BLINKER or event.button == RIGHT_BLINKER)
-
-
-# geometry
 def rotate_point(orig_pt, center_pt, angle):
 
     (center_x, center_y) = center_pt
@@ -145,3 +139,21 @@ def is_crash(positions):
             if is_collision:
                 return True
     return False
+
+
+# game events helpers
+def is_quit(event):
+    return (event.type == pygame.QUIT) or \
+        ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE))
+
+def is_restart(event, PAUSE):
+    return event.type == pygame.JOYBUTTONDOWN and event.button == R
+
+def is_pause_pressed(event):
+    return ((event.type == pygame.KEYDOWN and event.key == pygame.K_p) or \
+        event.type == pygame.JOYBUTTONDOWN and event.button == P)
+
+def is_blinker(event):
+    return event.type == pygame.JOYBUTTONDOWN and \
+        (event.button == LEFT_BLINKER or event.button == RIGHT_BLINKER)
+

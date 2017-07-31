@@ -3,8 +3,8 @@ import pygame
 
 
 # Set the width and height of the screen
-screen_width = 900
-screen_height = 700
+screen_width = 1000
+screen_height = 1000
 
 # colors
 BLACK = (0,   0,   0)
@@ -15,9 +15,9 @@ BLUE = (0,   0,   255)
 GRAY = (211,211,211)
 YELLOW = (255,255,0)
 
-# game events
-LEFT = -1; RIGHT = 1
-FASTER = 1; SLOWER = -1
+# # action
+# LEFT = -1; RIGHT = 1
+# FASTER = 1; SLOWER = -1
 
 # actions: left, right, slower, faster, zero change
 Z = 0

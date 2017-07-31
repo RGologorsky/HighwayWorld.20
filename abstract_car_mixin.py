@@ -10,22 +10,19 @@ from helpers import *
 
 
 class AbstractCarMixin(object):
-    
-    WIDTH = 44 #228
-    HEIGHT = 100 #128
 
     data = "images"
 
     # init functions
     def lane_to_x_boundary(self, lane, left = True):
         if left:
-            return self.highway.lane_width * lane
+            return self.highway.x_offset + self.highway.lane_width * lane
         # if right
-        return self.highway.lane_width * (lane + 1)
+        return self.highway.x_offset + self.highway.lane_width * (lane + 1)
 
 
     def lane_center_to_pixel_pos(self, lane, lane_pos):
-        x = (lane + 0.5) * self.highway.lane_width
+        x = self.highway.x_offset + (lane + 0.5) * self.highway.lane_width
         y = self.highway.highway_len - lane_pos
         return (x, y)
 
@@ -68,6 +65,10 @@ class AbstractCarMixin(object):
         self.lane     = lane
         self.lane_pos = lane_pos
     
+    def init_car_images(self):
+        file = self.file_name + self.file_ext
+        self.image_car = pygame.image.load(file).convert_alpha()
+        self.straight_image_car = self.image_car
 
     def __eq__(self, other):
         return self.id == other.id
@@ -170,6 +171,7 @@ class AbstractCarMixin(object):
      # returns whether the given lane position is a legal lane position
     def is_legal_lane_pos(self, lane_pos):
         return in_range(lane, 0, self.highway.highway_len - 1)
+        # return True
 
     def is_legal_speed(self, new_speed):
         return in_range(new_speed, self.min_speed, self.max_speed)
@@ -192,21 +194,9 @@ class AbstractCarMixin(object):
                         collidepoint(car_rect, new_back_left) or \
                         collidepoint(car_rect, new_back_right)
 
-            # (left, top) = center_to_upper_left(self, car.x, car.y)
-            # car_rect = pygame.Rect(left, top, self.WIDTH, self.HEIGHT)
-            
-            # collision = car_rect.collidepoint(new_top_left) or \
-            #             car_rect.collidepoint(new_top_right) or \
-            #             car_rect.collidepoint(new_back_left) or \
-            #             car_rect.collidepoint(new_back_right)
-
             if collision:
                 lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
                 print("car has collision: ", self.id, lane, lane_pos)
-                # print(car_rect.collidepoint(new_top_left))
-                # print(car_rect.collidepoint(new_top_right))
-                # print(car_rect.collidepoint(new_back_left))
-                # print(car_rect.collidepoint(new_back_right))
                 return True
         return False
 
@@ -218,7 +208,7 @@ class AbstractCarMixin(object):
         # see if corners collide with highway
         
         # Rect(left, top, width, height)
-        (left, top) = (0,0)
+        (left, top) = (self.highway.x_offset,0)
         highway_rect = pygame.Rect(left,top,self.highway.WIDTH, self.highway.HEIGHT)
         
         within_highway = highway_rect.collidepoint(new_top_left) and \
@@ -227,9 +217,6 @@ class AbstractCarMixin(object):
                     highway_rect.collidepoint(new_back_right)
 
         # if not within_highway:
-        #     new_x, new_y = new_back_left
-        #     lane, lane_pos = self.pixel_to_lane_pos(new_x, new_y)
-        #     # print("lane %d, lane pos %d" % (lane, lane_pos))
         #     # print("not within highway: ", self.id)
         #     print(highway_rect.collidepoint(new_top_left))
         #     print(highway_rect.collidepoint(new_top_right))
@@ -303,10 +290,8 @@ class AbstractCarMixin(object):
         if self.right_blinker and self.left_blinker:
             self.file_name = self.original_file_name + "_both"
         
-        file = self.file_name + self.file_ext
-        self.straight_image_car = pygame.image.load(file).convert_alpha()
-        self.image_car = self.straight_image_car
-        self.rotate()
+        self.init_car_images() # change car image to have blinker turned on
+        self.rotate()          # rotate the new image to the car's rotation
    
     def toggle_blinker(self, blinker):
         if blinker == RIGHT_BLINKER:
@@ -323,8 +308,15 @@ class AbstractCarMixin(object):
         x, y = coord
         return (int(x), int(y))
 
-    def draw(self, screen):
-        (center_x, center_y) = self.get_pixel_pos()
+    def draw(self, screen, is_playback = False):
+
+        if is_playback:
+            (center_x, center_y) = self.x, self.y
+            self.init_car_images() # file objects aren't preserved in record
+            self.rotate()
+
+        else:
+            (center_x, center_y) = self.get_pixel_pos()
 
         image_rect = self.image_car.get_rect()
         image_rect.centerx = center_x
@@ -334,6 +326,11 @@ class AbstractCarMixin(object):
         
         # draw center of car
         pygame.draw.circle(screen, YELLOW, (int(center_x), int(center_y)), 5, 0)
+
+        if self.role == "agent":
+            # draw center of car
+            pygame.draw.circle(screen, RED, (int(center_x), int(center_y)), 10, 0)
+
 
         # draw corners of car
         (new_top_left, new_top_right, new_back_left, new_back_right) = \

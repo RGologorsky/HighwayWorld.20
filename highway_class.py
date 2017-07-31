@@ -1,13 +1,10 @@
 import pygame
 import traceback
-from collections import namedtuple
 from constants import *
 from helpers import *
 from IRL.irlworld  import *
 from highway_mixin import HighwayMixin
 
-# not efficient 
-from copy import deepcopy
 
 from abstract_car import AbstractCar
 """
@@ -37,50 +34,40 @@ class Highway(HighwayMixin, IRLworld):
         self.HEIGHT = self.highway_len
         self.WIDTH = self.num_lanes * self.lane_width
 
+        self.x_offset = lane_width
+        self.down_speed = 0
 
+        self.lane_color = WHITE
+        self.road_color  = GRAY
+        self.odd_timestep = False # timestep parity is for illusion of motion
 
-    def get_car_state_record_list(self):
-        car_state_records = []
-        for car in self.car_list:
-            car_state = car.get_car_state_record()
-            car_state_records.append(car_state)
-        return car_state_records
-
-    def get_highway_state_record(self):
+    def get_highway_param(self):
+        
         d = dict()
-
         d['num_lanes'] = self.num_lanes
         d['highway_len'] = self.highway_len
+        d['lane_width'] = self.lane_width
+        
         d['HEIGHT'] = self.HEIGHT
         d['WIDTH'] = self.WIDTH
 
-        d['car_list'] = self.get_car_state_record_list()
-        d['odd_time'] = False
+        d['x_offset'] = self.x_offset
+        d['down_speed'] = self.down_speed
 
-        # adding in from highway mixin
-        d['lane_sep_color'] = self.lane_sep_color
-        d['lane_color']     = self.lane_color
+
+        d['lane_color'] = self.lane_color
+        d['road_color'] = self.road_color
+        d['odd_timestep'] = self.odd_timestep
         
-        d['lane_width'] = self.lane_width
-
-        d['increment'] = self.increment
-        d['max_increment'] = self.max_increment
-
-
         return d
 
-    def get_highway_param(self):
-        return (self.num_lanes, self.highway_len, self.lane_width)
-    
-    def get_highway_state(self):
-        highway_state = []
-        highway_state.append(self.highway_param())
+    def get_highway_cars(self):
+        cars = []
+        for car in self.car_list:
+            car_state = car.get_all_car_state()
+            cars.append(car_state)
+        return cars
 
-        for car in highway.car_list:
-            car_state = car.get_state() # 11-tuple
-            highway_state.append(car_state)
-        highway_time_series.append(highway_state)
-    
     # returns (id, #steps away, speed) of closest car in specified lane & dir
     def get_closest_car(self, lane, lane_pos, dir):
         # if no such lane
@@ -174,3 +161,15 @@ class Highway(HighwayMixin, IRLworld):
 
         for ref_pt in self.reference_pts:
             ref_pt.set_back(amt_back)
+
+
+    # STRING/PRINTING functions
+    def __str__(self):
+        res = "Highway State. \n"
+        for car in self.car_list:
+            res += ("Lane = %d. Pos = %3d. Speed = %2.1f. ID = %2d. \n" % \
+                (car.lane, car.lane_pos, car.speed, car.id))
+        return res
+
+    def print_state(self):
+        return print(str(self))
