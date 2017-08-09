@@ -9,12 +9,16 @@ screen_height = 1000
 # colors
 BLACK = (0,   0,   0)
 WHITE = (255, 255, 255)
-GREEN = (0, 255,   0)
+LIME_GREEN = (0, 255,   0)
+GREEN = (0,128,0)
 RED = (255,   0,   0)
 BLUE = (0,   0,   255)
 GRAY = (211,211,211)
 YELLOW = (255,255,0)
+DIM_GRAY = (105,105,105)
 
+
+background_color = LIME_GREEN
 # # action
 # LEFT = -1; RIGHT = 1
 # FASTER = 1; SLOWER = -1

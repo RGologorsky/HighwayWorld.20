@@ -16,7 +16,7 @@ def dict_to_namedtuple(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
 def redraw_all(screen, draw_list):
-    screen.fill(GREEN)
+    screen.fill(background_color)
     for obj in draw_list:
         obj.draw(screen)
     pygame.display.flip()

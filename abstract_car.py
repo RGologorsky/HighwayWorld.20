@@ -25,11 +25,31 @@ class AbstractCar(AbstractCarMixin, object):
     min_speed = 0
     max_speed = 10
     
-    # init functions
+    # resets the class counter variable, which is used to assign unique ID's
     def reset_counter():
         AbstractCar.counter = itertools.count(1)
 
-   
+    """ 
+    AbstractCar Parameters:
+
+    id is a class-generated identifier used for car object equality testing
+    role is used to identify car roles in the scenario (e.g. agent car)
+    highway =car's highway object, simulator =car's control interface instance
+    heading is measured in radians from the x-axis counter-clockwise
+    car image is the car's curren image (changes depending on blinkers)
+    straight (unrotated) car image is used to generate rotated car image
+    WIDTH, HEIGHT are used to mathematically calculate motion and collision
+    lane = current lane, discrete, 0-indexed.
+    x = x-coordinate the car's pixel center (float)
+    lane pos = current y-position in the lane, growing from bottom to top
+    y = y-coordinate corresponding to Pygame, y-axis grows from top to bottom
+    right/left blinker = indicator whether the right/left blinker is on
+    l_r, l_f = distance to rear/front axle from the center of mass
+    
+    Car helper functions are located in AbstractCarMixin.
+    Derived car classes are in car_class.py
+    """
+
     def __init__(self, highway, simulator=None, lane=-1, lane_pos=-1, speed=-1,role="None"):
         self.id           = next(self.counter)
         self.role         = role
@@ -39,6 +59,14 @@ class AbstractCar(AbstractCarMixin, object):
 
         self.heading    = pi/2 # 90 degrees from x-axis
 
+        # init car image and straight car image, req: file_name, file_ext init
+        self.init_car_images()
+
+        # set width, height
+        if not hasattr(self, "WIDTH") or not hasattr(self, "HEIGHT"):
+            self.WIDTH, self.HEIGHT = self.straight_image_car.get_rect().size
+
+
         # init (x, y, lane, lane_pos) with given inputs or random. 
         self.init_place(lane, lane_pos)
         self.init_pixel_pos()
@@ -47,20 +75,20 @@ class AbstractCar(AbstractCarMixin, object):
         # normal: speed ~ normal disribution w/mean governed by lane
         self.init_speed(speed, normal=True)
 
+        # blinkers
+        self.right_blinker = False
+        self.left_blinker  = False
+ 
         # Center of mass = middle.
         self.l_r = self.HEIGHT * 0.50
         self.l_f = self.HEIGHT * 0.50
 
-        # blinkers
-        self.right_blinker = False
-        self.left_blinker  = False
-
-        # init car image and straight car image, req: file_name, file_ext init
-        self.init_car_images()
 
         # update highway
         self.highway.add_car(self)
 
+    # get the car state, here all non-object car variables.
+    # current control inputs (accel, steering angle) are added to car state
     def get_all_car_state(self):
         # dont save objects, save values
         no_keys = ["simulator", "highway", "image_car", "straight_image_car"]
@@ -69,11 +97,10 @@ class AbstractCar(AbstractCarMixin, object):
         d['u1'] = self.simulator.u1
         d['u2'] = self.simulator.u2
 
-        # print("car state: ")
-        # print(d.keys())
         return d
     
-
+    # given a (perhaps rotated) car, return smallest distance along x or y-axis
+    # to the given point.  
     def smallest_dist_to_point(self, pos, y_axis=True):
         (x, y) = pos
 

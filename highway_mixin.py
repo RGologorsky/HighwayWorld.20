@@ -8,13 +8,11 @@ class HighwayMixin(object):
     # DRAWING FUNCTIONS
 
     def draw_road(self, screen, x, y):
-        print("drawing road")
         highway_width = self.lane_width * self.num_lanes
         pygame.draw.rect(screen, self.road_color, \
             [x,y,highway_width, self.highway_len], 0)
 
     def draw_dashed_lane(self, screen, x, y):
-        print("drawing dashed lane")
         # dash_len = length of dash, 
         # gap_len = length of the gap between dash starts
 
@@ -53,7 +51,7 @@ class HighwayMixin(object):
         render_multi_line(screen, speed_limit + "\n" + curr_speed, x, y, text_color = RED)
 
     # GENERAL DRAW METHOD
-    def draw(self, screen, draw_features = True, is_playback = False):
+    def draw(self, screen, draw_features = False, is_playback = False):
         # start drawing highway lanes at x_offset
         curr_x, y = self.x_offset, 0
         # draw road (just rectangle without lane markings)
@@ -86,7 +84,6 @@ class HighwayMixin(object):
                 agent_car = car  
 
         if draw_features and not is_playback:
-            
             # draw agent car features
             x, curr_y  = self.lane_width * (self.num_lanes + 1) + 100, 10
             if agent_car:

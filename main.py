@@ -38,9 +38,7 @@ def play_game(scenario_num=0):
 
 def play_back(time):
     screen = init_screen()
-
-    screen.fill(GREEN)
-
+    
     (highway_param, highway_time_series) = Playback.get_recorded_data(time)
 
     num_time_steps = len(highway_time_series)

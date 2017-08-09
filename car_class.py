@@ -5,6 +5,8 @@ from math import *
 from dynamics_model import *
 from helpers import *
 
+from random import choice
+
 # pygame.sprite.Sprite
 class OtherCar(AbstractCar):
 
@@ -15,10 +17,6 @@ class OtherCar(AbstractCar):
         self.file_name = self.original_file_name
         self.file_ext = ".png"
 
-        # standard car
-        if not hasattr(self, "WIDTH") or not hasattr(self, "HEIGHT"):
-            self.WIDTH = 44 #228
-            self.HEIGHT = 100 #128
 
         super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
@@ -40,24 +38,18 @@ class SchoolBus(OtherCar):
     def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
         role="school_bus", file_name="school_bus"):
 
-        self.WIDTH = 47
-        self.HEIGHT = 192
         super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
 
 class LongTruck(OtherCar):
     def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
         role="long_truck", file_name="long_truck"):
 
-        self.WIDTH = 44
-        self.HEIGHT = 199
         super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
 
 class MediumTruck(OtherCar):
     def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, \
         role="medium_truck", file_name="medium_truck"):
 
-        self.WIDTH = 44
-        self.HEIGHT = 138
         super().__init__(highway, simulator, lane, lane_pos, speed, role, file_name)
 
 class MergingCar(AbstractCar):
@@ -68,8 +60,6 @@ class MergingCar(AbstractCar):
         self.file_name = self.original_file_name
         self.file_ext = ".png"
 
-        self.WIDTH = 44 #228
-        self.HEIGHT = 100 #128
 
         super().__init__(highway, simulator, lane, lane_pos, speed, role)
 
@@ -158,14 +148,16 @@ class AgentCar(AbstractCar):
     def init_start_state(self):
         self.trajectory.append(self.get_feature())
 
-    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="agent"):
+    def __init__(self, highway, simulator, lane=-1, lane_pos=-1, speed=-1, role="agent", file_name = ""):
         AbstractCar.reset_counter();
 
         self.trajectory = []
 
-        self.original_file_name = AbstractCar.data + "/medium_truck"
-        self.WIDTH = 44 #228
-        self.HEIGHT = 138 #128
+        if not file_name:
+            # choice(["other_car", "long_truck", "medium_truck"])
+            file_name = "other_car"
+
+        self.original_file_name = AbstractCar.data + "/" + file_name
         # self.original_file_name = AbstractCar.data + "/agent_car"
         self.file_name = self.original_file_name
         self.file_ext = ".png"
