@@ -51,7 +51,7 @@ class HighwayMixin(object):
         render_multi_line(screen, speed_limit + "\n" + curr_speed, x, y, text_color = RED)
 
     # GENERAL DRAW METHOD
-    def draw(self, screen, draw_features = False, is_playback = False):
+    def draw(self, screen, draw_features = True, is_playback = False):
         # start drawing highway lanes at x_offset
         curr_x, y = self.x_offset, 0
         # draw road (just rectangle without lane markings)
